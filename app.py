@@ -33,8 +33,6 @@ def generar_perfil_ia(nombre, detalles_prueba):
     try:
         with open("manual.txt", "r", encoding="utf-8") as f:
             manual = f.read()
-        
-        # --- NUEVO PROMPT DIRECTO Y CONCRETO ---
         prompt = f"""Actúa como Psicólogo Deportivo de Pumas CU. Evalúa utilizando ESTE manual:
 
 {manual}
@@ -44,11 +42,23 @@ RESULTADOS:
 {detalles_prueba}
 
 INSTRUCCIÓN CRÍTICA: Escribe un perfil psicológico MUY CONCRETO, DIRECTO y BREVE para el psicólogo a cargo. NO uses introducciones largas ni texto laborioso. Ve directo al grano usando viñetas (bullet points) para destacar los hallazgos principales de los puntajes y finaliza con 2 recomendaciones prácticas y claras."""
-        
         respuesta = modelo_ia.generate_content(prompt)
         return respuesta.text
     except Exception as e:
         return f"Error real de Gemini: {e}"
+
+def generar_resumen_expediente(nombre, historial_texto):
+    try:
+        prompt = f"""Actúa como Psicólogo Deportivo de Pumas CU. Este es el historial consolidado de las pruebas psicométricas del atleta {nombre} a lo largo de diferentes periodos:
+
+{historial_texto}
+
+INSTRUCCIÓN CRÍTICA: Escribe un Resumen de Expediente MUY CONCRETO y DIRECTO en viñetas. Analiza la evolución del jugador cruzando la información de las distintas pruebas aplicadas y los periodos. Destaca fortalezas generales, áreas de riesgo persistentes y da una conclusión clínica breve. No uses introducciones laboriosas."""
+        respuesta = modelo_ia.generate_content(prompt)
+        return respuesta.text
+    except Exception as e:
+        return f"Error de Gemini: {e}"
+
 
 # --- INTERFAZ PRINCIPAL ---
 if st.session_state.usuario is None:
@@ -86,7 +96,7 @@ else:
     # ==========================================
     if usuario_actual["rol"] == "psicologo":
         st.title("Panel de Control - Staff Psicológico")
-        t_buzon, t_agenda, t_roster = st.tabs(["📥 Buzón de Evaluaciones", "🗓️ Agenda de Citas", "👥 Roster y Asignación"])
+        t_buzon, t_agenda, t_roster, t_expediente = st.tabs(["📥 Buzón", "🗓️ Agenda", "👥 Roster", "📁 Expedientes"])
         
         # --- TAB: BUZÓN ---
         with t_buzon:
@@ -102,11 +112,11 @@ else:
             for ev in pendientes:
                 nombre_jugador = ev['usuarios']['nombre'] if ev['usuarios'] else "Desconocido"
                 tipo = ev.get("tipo_prueba", "Evaluación")
+                periodo = ev.get("periodo", "No definido")
                 
-                with st.expander(f"🔴 NUEVA - {nombre_jugador} (Prueba: {tipo})", expanded=False):
-                    
+                with st.expander(f"🔴 NUEVA - {nombre_jugador} | {tipo} ({periodo})", expanded=False):
                     with st.expander("📋 Ver Respuestas del Atleta (Detalle)"):
-                        st.text(ev.get("respuestas_detalladas", "Respuestas individuales no guardadas en versiones anteriores."))
+                        st.text(ev.get("respuestas_detalladas", "Sin detalles."))
 
                     st.write("**Perfil IA Generado:**")
                     st.write(ev.get("perfil_ia", "No generado"))
@@ -125,22 +135,10 @@ else:
                             supabase.table("evaluaciones").delete().eq("id", ev["id"]).execute()
                             st.rerun()
 
-            if revisadas:
-                st.markdown("### Historial de Pruebas Revisadas")
-                for ev in revisadas:
-                    nombre_jugador = ev['usuarios']['nombre'] if ev['usuarios'] else "Desconocido"
-                    tipo = ev.get("tipo_prueba", "Evaluación")
-                    with st.expander(f"🟢 REVISADA - {nombre_jugador} (Prueba: {tipo})"):
-                        with st.expander("📋 Ver Respuestas del Atleta (Detalle)"):
-                            st.text(ev.get("respuestas_detalladas", "Respuestas individuales no guardadas en versiones anteriores."))
-                        st.write("**Perfil IA:**\n", ev.get("perfil_ia", ""))
-                        st.write("**Tus Notas:**\n", ev.get("notas_psicologo", "Sin notas previas."))
-
         # --- TAB: AGENDA ---
         with t_agenda:
             st.subheader("Citas Solicitadas por Atletas")
             citas = supabase.table("citas").select("*, usuarios(nombre)").order("id", desc=True).execute()
-            
             if not citas.data:
                 st.info("No hay citas programadas por el momento.")
             
@@ -154,7 +152,6 @@ else:
                     if cita['estado'] == "Pendiente":
                         if st.button("Confirmar Cita", key=f"conf_cita_{cita['id']}"):
                             supabase.table("citas").update({"estado": "Confirmada"}).eq("id", cita["id"]).execute()
-                            st.success("Cita confirmada.")
                             st.rerun()
                     if st.button("Cancelar / Borrar Cita", key=f"del_cita_{cita['id']}"):
                         supabase.table("citas").delete().eq("id", cita["id"]).execute()
@@ -177,6 +174,50 @@ else:
                             st.success(f"Prueba actualizada para {jug['nombre']}")
                             st.rerun()
 
+        # --- TAB: EXPEDIENTES ---
+        with t_expediente:
+            st.subheader("Expedientes Clínicos de Atletas")
+            jugadores_exp = supabase.table("usuarios").select("*").eq("rol", "jugador").execute()
+            
+            for jug in jugadores_exp.data:
+                with st.expander(f"📁 Expediente: {jug['nombre']}"):
+                    # Extraer evaluaciones del jugador
+                    evals_jugador = supabase.table("evaluaciones").select("*").eq("jugador_id", jug["id"]).order("id", desc=False).execute()
+                    
+                    if not evals_jugador.data:
+                        st.warning("Este atleta aún no tiene pruebas registradas.")
+                    else:
+                        st.markdown("**Historial de Pruebas Aplicadas:**")
+                        historial_texto = ""
+                        for e in evals_jugador.data:
+                            tipo = e.get("tipo_prueba", "Prueba")
+                            periodo = e.get("periodo", "No definido")
+                            fecha_aprox = f"ID:{e['id']}" # Referencia temporal simple
+                            perfil_ia = e.get("perfil_ia", "Sin análisis")
+                            notas_psic = e.get("notas_psicologo", "Sin notas")
+                            
+                            st.write(f"- **{tipo}** ({periodo}) - Estado: {e.get('estado')}")
+                            
+                            # Construir el texto que se le mandará a la IA para el resumen
+                            historial_texto += f"\n--- PRUEBA: {tipo} | PERIODO: {periodo} ---\nAnálisis IA original: {perfil_ia}\nNotas del Psicólogo: {notas_psic}\n"
+                        
+                        st.markdown("---")
+                        st.markdown("**Resumen Consolidado del Expediente:**")
+                        
+                        resumen_actual = jug.get("resumen_expediente")
+                        if resumen_actual:
+                            st.info(resumen_actual)
+                        else:
+                            st.write("Aún no se ha generado un resumen consolidado para este atleta.")
+                        
+                        if st.button("🧠 Generar Reporte del Atleta (IA)", key=f"resumen_{jug['id']}"):
+                            with st.spinner("Integrando historial y generando resumen clínico..."):
+                                nuevo_resumen = generar_resumen_expediente(jug['nombre'], historial_texto)
+                                supabase.table("usuarios").update({"resumen_expediente": nuevo_resumen}).eq("id", jug["id"]).execute()
+                            st.success("Resumen generado y guardado exitosamente.")
+                            st.rerun()
+
+
     # ==========================================
     # VISTA ATLETA (JUGADOR)
     # ==========================================
@@ -193,9 +234,15 @@ else:
             else:
                 st.write(f"Tienes asignada la evaluación: **{prueba_asignada}**. Responde con honestidad.")
                 
-                # --- POMS ---
+                # Opciones de periodo general para las pruebas
+                periodo_opciones = ["Pretemporada", "Temporada Regular", "Postemporada"]
+                
                 if prueba_asignada in ["POMS", "Todas"]:
                     with st.expander("📝 Abrir Cuestionario POMS", expanded=True):
+                        st.write("Selecciona el periodo actual de la temporada:")
+                        periodo_poms = st.selectbox("Periodo", periodo_opciones, key="per_poms")
+                        st.markdown("---")
+                        
                         items_poms = [
                             "Enfadado", "Agotado", "Lleno de energía", "Amable", "Con los nervios de punta", 
                             "Infeliz", "Malhumorado", "Fatigado", "Enérgico", "Comprensivo", 
@@ -217,8 +264,6 @@ else:
                             depresion = sum([valores[5], valores[11], valores[17], valores[23], valores[29]])
                             
                             detalles = f"[POMS] Cólera: {colera}, Fatiga: {fatiga}, Vigor: {vigor}, Amistad: {amistad}, Tensión: {tension}, Depresión: {depresion}"
-                            
-                            # Generar texto crudo para el psicólogo
                             resp_crudas = "\n".join([f"{item}: {resp}" for item, resp in zip(items_poms, respuestas_poms)])
                             
                             with st.spinner("Enviando y analizando..."):
@@ -226,6 +271,7 @@ else:
                                 supabase.table("evaluaciones").insert({
                                     "jugador_id": usuario_actual["id"], 
                                     "tipo_prueba": "POMS", 
+                                    "periodo": periodo_poms,
                                     "poms_total": sum(valores), 
                                     "acsi_total": 0, 
                                     "perfil_ia": perfil,
@@ -235,9 +281,12 @@ else:
                             st.success("Enviado exitosamente.")
                             st.rerun()
 
-                # --- ACSI-28 ---
                 if prueba_asignada in ["ACSI-28", "Todas"]:
                     with st.expander("📝 Abrir Cuestionario ACSI-28", expanded=True):
+                        st.write("Selecciona el periodo actual de la temporada:")
+                        periodo_acsi = st.selectbox("Periodo", periodo_opciones, key="per_acsi")
+                        st.markdown("---")
+                        
                         items_acsi = [
                             "Diaria o semanalmente establezco metas muy especificas que guian lo que hago.",
                             "Obtengo el maximo provecho de mi talento y habilidades.",
@@ -274,8 +323,6 @@ else:
                         if st.button("Enviar ACSI-28"):
                             v = [int(r.split(" ")[0]) for r in respuestas_acsi]
                             detalles = f"[ACSI-28] Adversidad: {sum(v[0:4])}, Presión: {sum(v[4:8])}, Metas: {sum(v[8:12])}, Concentración: {sum(v[12:16])}, Libre Preocupación: {sum(v[16:20])}, Confianza: {sum(v[20:24])}, Entrenabilidad: {sum(v[24:28])} (Total: {sum(v)})"
-                            
-                            # Generar texto crudo
                             resp_crudas = "\n".join([f"P{i+1}: {resp}" for i, resp in enumerate(respuestas_acsi)])
                             
                             with st.spinner("Enviando y analizando..."):
@@ -283,6 +330,7 @@ else:
                                 supabase.table("evaluaciones").insert({
                                     "jugador_id": usuario_actual["id"], 
                                     "tipo_prueba": "ACSI-28", 
+                                    "periodo": periodo_acsi,
                                     "poms_total": 0, 
                                     "acsi_total": sum(v), 
                                     "perfil_ia": perfil,
@@ -292,9 +340,12 @@ else:
                             st.success("Enviado exitosamente.")
                             st.rerun()
 
-                # --- IPED ---
                 if prueba_asignada in ["IPED", "Todas"]:
                     with st.expander("📝 Abrir Cuestionario IPED", expanded=True):
+                        st.write("Selecciona el periodo actual de la temporada:")
+                        periodo_iped = st.selectbox("Periodo", periodo_opciones, key="per_iped")
+                        st.markdown("---")
+                        
                         items_iped = [
                             "Me veo mas como un ganador que como un perdedor durante las competiciones.",
                             "Puedo mantener un flujo de energia positiva en situaciones dificiles.",
@@ -323,7 +374,6 @@ else:
                         if st.button("Enviar IPED"):
                             v = [int(r.split(" ")[0]) for r in respuestas_iped]
                             detalles = f"[IPED] AC:{sum(v[0:3])}, CAN:{sum(v[3:6])}, CAT:{sum(v[6:9])}, CVI:{sum(v[9:12])}, NM:{sum(v[12:15])}, CAP:{sum(v[15:18])}, CAC:{sum(v[18:20])}"
-                            
                             resp_crudas = "\n".join([f"P{i+1}: {resp}" for i, resp in enumerate(respuestas_iped)])
                             
                             with st.spinner("Enviando y analizando..."):
@@ -331,6 +381,7 @@ else:
                                 supabase.table("evaluaciones").insert({
                                     "jugador_id": usuario_actual["id"], 
                                     "tipo_prueba": "IPED", 
+                                    "periodo": periodo_iped,
                                     "poms_total": 0, 
                                     "acsi_total": 0, 
                                     "perfil_ia": perfil,
@@ -340,9 +391,12 @@ else:
                             st.success("Enviado exitosamente.")
                             st.rerun()
 
-                # --- GEQ ---
                 if prueba_asignada in ["GEQ", "Todas"]:
                     with st.expander("📝 Abrir Cuestionario GEQ", expanded=True):
+                        st.write("Selecciona el periodo actual de la temporada:")
+                        periodo_geq = st.selectbox("Periodo", periodo_opciones, key="per_geq")
+                        st.markdown("---")
+                        
                         items_geq = [
                             "No disfruto formar parte de las actividades sociales de este equipo.",
                             "No estoy satisfecho(a) con la cantidad de tiempo de juego o participacion que tengo.",
@@ -369,7 +423,6 @@ else:
                             tarea = round(sum(respuestas_geq[:9]) / 9, 2)
                             social = round(sum(respuestas_geq[9:]) / 9, 2)
                             detalles = f"[GEQ] Promedio Tarea: {tarea}, Promedio Social: {social}"
-                            
                             resp_crudas = "\n".join([f"P{i+1}: Valor {resp}" for i, resp in enumerate(respuestas_geq)])
                             
                             with st.spinner("Enviando y analizando..."):
@@ -377,6 +430,7 @@ else:
                                 supabase.table("evaluaciones").insert({
                                     "jugador_id": usuario_actual["id"], 
                                     "tipo_prueba": "GEQ", 
+                                    "periodo": periodo_geq,
                                     "poms_total": 0, 
                                     "acsi_total": 0, 
                                     "perfil_ia": perfil,
@@ -397,8 +451,9 @@ else:
             for ev in mis_evals.data:
                 estado_tag = "🟢 Revisada" if ev.get("estado") == "Revisada" else "⏳ En Revisión"
                 tipo = ev.get("tipo_prueba", "Evaluación Psicológica")
+                periodo = ev.get("periodo", "No definido")
                 
-                with st.expander(f"{estado_tag} - Prueba: {tipo}"):
+                with st.expander(f"{estado_tag} - {tipo} ({periodo})"):
                     st.write("**Notas del Staff Psicológico:**")
                     if ev.get("notas_psicologo"):
                         st.info(ev["notas_psicologo"])
