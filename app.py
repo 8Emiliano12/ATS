@@ -117,4 +117,5 @@ else:
                     "acsi_total": acsi_val,
                     "perfil_ia": perfil
                 }
-                supabase.table("evalu
+                supabase.table("evaluaciones").insert(nueva_eval).execute()
+            st.success("Resultados enviados correctamente. El staff revisará tu perfil.")
