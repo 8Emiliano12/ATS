@@ -1,0 +1,309 @@
+MANUAL E INTERPRETACIONAL DE PRUEBAS PSICOMÉTRICAS DEPORTIVAS Y CUESTIONARIOS
+1. SÍNTESIS Y FICHAS TÉCNICAS DE LAS PRUEBAS PSICOMÉTRICAS
+A. Inventario Psicológico de Ejecución Deportiva (IPED)
+Objetivo: Evaluar los factores psicológicos y habilidades competitivas asociados al rendimiento deportivo.
+Estructura: 42 ítems agrupados en 7 dimensiones (6 ítems por dimensión).
+Escala de Respuesta: Likert de 5 puntos:
+Casi nunca
+Pocas veces
+A veces
+A menudo
+Casi siempre
+Rango de Puntuación: Cada dimensión oscila entre 6 y 30 puntos.
+Dimensiones e Ítems:
+Autoconfianza (AC): Ítems 1, 8, 15, 22, 29, 36
+Control de Afrontamiento Negativo (CAN): Ítems 2, 9, 16, 23, 30, 37
+Control Atencional (CAT): Ítems 3, 10, 17, 24, 31, 38
+Control Visuo-Imaginativo (CVI): Ítems 4, 11, 18, 25, 32, 39
+Nivel Motivacional (NM): Ítems 5, 12, 19, 26, 33, 40
+Control de Afrontamiento Positivo (CAP): Ítems 6, 13, 20, 27, 34, 41
+Control Actitudinal (CAC): Ítems 7, 14, 21, 28, 35, 42
+B. Inventario de Habilidades de Afrontamiento Deportivo (ACSI-28)
+Objetivo: Medir los recursos de afrontamiento psicológico específicos para el contexto deportivo.
+Estructura: 28 ítems organizados en 7 subescalas (4 ítems cada una) más la puntuación total de Recursos Personales.
+Escala de Respuesta: Likert de 4 puntos:
+Casi nunca
+A veces
+A menudo
+Casi siempre
+Rango de Puntuación:
+Subescalas: 4 a 16 puntos cada una.
+Escala Total: 28 a 112 puntos.
+Subescalas e Ítems:
+Afrontamiento de la Adversidad: Ítems 5, 17, 21, 24
+Rendimiento Bajo Presión: Ítems 6, 18, 22, 28
+Establecimiento de Metas / Preparación Mental: Ítems 1, 8, 13, 20
+Concentración: Ítems 4, 11, 16, 25
+Libre de Preocupación: Ítems 7, 12, 19, 23
+Confianza y Motivación de Logro: Ítems 2, 9, 14, 26
+Receptividad a la Instrucción (Entrenabilidad): Ítems 3, 10, 15, 27
+C. Cuestionario de Cohesión Grupal (GEQ)
+Objetivo: Evaluar la cohesión grupal en equipos deportivos en sus dimensiones sociales y de tarea.
+Estructura: 18 ítems.
+Escala de Respuesta: Likert de 9 puntos (1 = Totalmente en desacuerdo, 9 = Totalmente de acuerdo).
+Dimensiones:
+Integración Grupal - Tarea (GI-T)
+Integración Grupal - Social (GI-S)
+Atracción Individual al Grupo - Tarea (ATG-T)
+Atracción Individual al Grupo - Social (ATG-S)
+D. Perfil de Estados de Ánimo - Versión Abreviada (POMS)
+Objetivo: Evaluar estados afectivos y emocionales fluctuantes en deportistas.
+Estructura: 30 adjetivos en 6 factores (5 ítems por factor).
+Escala de Respuesta: Likert de 5 puntos (0 = Nada, 1 = Un poco, 2 = Moderadamente, 3 = Bastante, 4 = Muchísimo).
+Rango de Puntuación: 0 a 20 puntos por factor.
+Factores Afectivos:
+Cólera: Ira, irritabilidad y enojo.
+Fatiga: Agotamiento físico y mental.
+Vigor (Positivo): Energía y vitalidad.
+Amistad (Positivo): Empatía y afecto interpersonal.
+Tensión: Ansiedad y nerviosismo.
+Estado Deprimido: Tristeza y desánimo.
+2. BAREMOS Y RANGOS DE INTERPRETACIONAL DE PUNTAJES
+Prueba
+Dimensión / Subescala
+Nivel Bajo
+Nivel Medio / Adecuado
+Nivel Alto / Fortalecido
+ IPED (6–30 pts)
+AC, CAN, CAT, CVI, NM, CAP, CAC
+6 – 15 pts
+16 – 23 pts
+24 – 30 pts
+ ACSI-28 (4–16 pts)
+7 Subescalas de Afrontamiento
+4 – 8 pts
+9 – 12 pts
+13 – 16 pts
+ ACSI-28 Total (28–112 pts)
+Recursos Personales Globales
+28 – 56 pts
+57 – 84 pts
+85 – 112 pts
+ GEQ (1–9 pts promedio)
+Tarea y Social (Promedio ítem)
+1.0 – 4.0 pts
+4.1 – 6.9 pts
+7.0 – 9.0 pts
+ POMS (0–20 pts)
+Factores Negativos (Cólera, Fatiga, Tensión, Depresión)
+0 – 5 pts (Deseable)
+6 – 11 pts
+12 – 20 pts (Riesgo/Alerta)
+ POMS (0–20 pts)
+Factores Positivos (Vigor, Amistad)
+0 – 7 pts (Riesgo)
+8 – 13 pts
+14 – 20 pts (Óptimo)
+
+3. SYSTEM PROMPT PARA LA INTELIGENCIA ARTIFICIAL (INTERPRETACIÓN AUTOMATIZADA)
+ROL Y OBJETIVO DEL SISTEMA:
+
+Eres un Psicólogo Deportivo de Élite experto en diagnóstico psicométrico y preparación mental para atletas de alto rendimiento. Tu función es recibir los puntajes obtenidos por un deportista en las siguientes pruebas: IPED, ACSI-28, GEQ (Cohesión) y POMS (Versión Breve). Con base en los datos provistos, debes generar un informe individualizado, estructurado, riguroso y profesional.
+
+REGLAS DE EVALUACIÓN Y PARÁMETROS DE PUNTAJE:
+
+1. IPED (Inventario Psicológico de Ejecución Deportiva - Rango 6 a 30 por dimensión):
+
+   - Autoconfianza (AC), Control Afrontamiento Negativo (CAN), Control Atencional (CAT), Control Visuo-Imaginativo (CVI), Nivel Motivacional (NM), Control Afrontamiento Positivo (CAP), Control Actitudinal (CAC).
+
+   - Interpretación: Bajo (6-15), Medio (16-23), Alto (24-30).
+
+2. ACSI-28 (Inventario de Habilidades de Afrontamiento Deportivo - Rango 4 a 16 por subescala, Total 28 a 112):
+
+   - Subescalas: Afrontamiento de la Adversidad, Rendimiento bajo Presión, Establecimiento de Metas/Preparación Mental, Concentración, Libre de Preocupación, Confianza/Motivación de Logro, Receptividad a la Instrucción.
+
+   - Interpretación Subescalas: Bajo (4-8), Medio (9-12), Alto (13-16).
+
+   - Puntaje Total: Bajo (28-56), Medio (57-84), Alto (85-112).
+
+3. GEQ / COHESIÓN GRUPAL (Promedio 1.0 a 9.0):
+
+   - Áreas: Integración Grupal Tarea/Social, Atracción Individual Tarea/Social.
+
+   - Interpretación: Bajo (1.0-4.0), Medio (4.1-6.9), Alto (7.0-9.0).
+
+4. POMS ABREVIADO (Perfil de Estados de Ánimo - Rango 0 a 20 por factor):
+
+   - Factores Negativos: Tensión, Cólera, Fatiga, Estado Deprimido (Ideal: 0-5; Moderado: 6-11; Riesgo/Alto: 12-20).
+
+   - Factores Positivos: Vigor, Amistad (Riesgo/Bajo: 0-7; Moderado: 8-13; Óptimo/Alto: 14-20).
+
+   - Perfil Témpano: Identifica si existe el perfil óptimo de rendimiento (Vigor elevado con factores negativos bajos).
+
+ESTRUCTURA OBLIGATORIA DEL REPORTE GENERADO:
+
+## 1. Resumen Ejecutivo del Perfil Psicológico
+
+- Síntesis clara del estado psicológico actual del deportista en un máximo de 3 párrafos.
+
+- Identificación directa de si el atleta presenta un perfil competitivo óptimo, moderado o en riesgo.
+
+## 2. Análisis por Pruebas Psicometradas
+
+- **IPED (Perfil Competitivo):** Desglose puntual de fortalezas (≥24) y debilidades (≤15).
+
+- **ACSI-28 (Afrontamiento Deportivo):** Análisis de recursos de autorregulación y manejo de estrés.
+
+- **POMS (Estado Afectivo Actual):** Descripción del estado de ánimo (mención explícita de si se cumple la hipótesis del perfil témpano).
+
+- **GEQ (Dinámica Grupal / Cohesión):** Grado de acoplamiento al equipo y alineación con las metas comunes.
+
+## 3. Matriz de Fortalezas y Áreas de Oportunidad
+
+- **Fortalezas Críticas (Puntos Fuertes):** Lista con viñetas.
+
+- **Factores de Riesgo / Áreas de Oportunidad:** Lista con viñetas.
+
+## 4. Plan de Intervención y Recomendaciones Prácticas
+
+- 3 a 5 estrategias concretas de entrenamiento mental (p. ej., técnicas de respiración, reestructuración cognitiva, visualización visuo-imaginativa, trabajo de cohesión) según las deficiencias detectadas.
+
+INSTRUCCIONES DE ENTRADA:
+
+Solicita al usuario los puntajes del atleta indicando el formato esperado:
+
+"Por favor ingresa los puntajes del atleta en el siguiente formato:
+
+- IPED: AC: X, CAN: X, CAT: X, CVI: X, NM: X, CAP: X, CAC: X
+
+- ACSI-28: Adversidad: X, Presión: X, Metas: X, Concentración: X, Libre Preocupación: X, Confianza: X, Entrenabilidad: X (Total: X)
+
+- GEQ: Promedio Tarea: X, Promedio Social: X
+
+- POMS: Cólera: X, Fatiga: X, Vigor: X, Amistad: X, Tensión: X, Depresión: X"
+4. CUESTIONARIOS COMPLETOS EN ESPAÑOL
+CUESTIONARIO 1: INVENTARIO PSICOLÓGICO DE EJECUCIÓN DEPORTIVA (IPED)
+Instrucciones: Responde a cada frase marcando la opción que mejor describa tu forma de actuar durante tus entrenamientos o competiciones.
+Opciones de respuesta: 1 = Casi nunca | 2 = Pocas veces | 3 = A veces | 4 = A menudo | 5 = Casi siempre
+
+Me veo más como un ganador que como un perdedor durante las competiciones.
+Puedo mantener un flujo de energía positiva en situaciones difíciles.
+Me resulta fácil concentrarme y bloquear distracciones.
+Imagino con claridad mis ejecuciones técnicas antes de competir.
+Estoy altamente motivado para entrenar lo mejor que puedo cada día.
+Puedo transformar los errores en oportunidades de aprendizaje durante el juego.
+Mantengo una actitud positiva y constructiva con mis compañeros y entrenadores.
+Creo firmemente en mi capacidad como deportista para alcanzar el éxito.
+Controlo la ira y la frustración cuando las cosas no salen como quiero.
+Puedo enfocar mi atención de inmediato en el siguiente punto o jugada.
+Practico mentalmente mis habilidades físicas y tácticas con frecuencia.
+Las metas que me he propuesto me hacen trabajar duro constantemente.
+Puedo disfrutar de la competición incluso en momentos de alta presión.
+Me comunico de manera respetuosa y abierta sobre mis responsabilidades en el equipo.
+Mantengo la confianza en mí mismo aun cuando pierdo o cometo errores.
+Elimino emociones negativas rápidamente para volver a concentrarme.
+Mantengo el foco en la tarea presente sin pensar en errores pasados.
+Visualizo soluciones exitosas a situaciones difíciles antes de que ocurran.
+Siento un genuino entusiasmo y disfrute al practicar mi deporte.
+Me lleno de sensación de desafío e inspiración en situaciones complejas.
+Asumo la responsabilidad personal por mi rendimiento sin culpar a otros.
+Me desempeño al máximo de mi talento y capacidad en los momentos clave.
+Permanezco calmado cuando me enfrento a decisiones arbitrales o rivales difíciles.
+Realizo respiraciones y ajustes atencionales durante la competición.
+Cuando me visualizo compitiendo, puedo sentir la situación de manera vívida.
+Estoy dispuesto a dar todo lo necesario para alcanzar mi máximo potencial.
+Acepto los momentos de presión como retos motivantes.
+Mantengo hábitos y actitudes alineadas con el plan de trabajo del equipo.
+Siento que mi preparación física y mental es suficiente para ganar.
+Controlo los nervios y la tensión muscular en momentos decisivos.
+Evito que pensamientos distractores o externos interfieran en mi rendimiento.
+Utilizo imágenes mentales durante la competición para mejorar mi ejecución.
+Mantengo una alta motivación intrínseca sin necesidad de presiones externas.
+Reacciono positivamente ante los imprevistos durante la competición.
+Muestro disposición constante para aprender y colaborar con el grupo.
+Transmito la imagen y postura de un atleta seguro de sí mismo.
+Controlo el miedo a fallar o la preocupación por el resultado final.
+Puedo dirigir mi atención a un solo objetivo relevante en cada momento.
+La práctica mental me ayuda a ejecutar con mayor precisión mis movimientos.
+Me levanto entusiasmado por entrenar y mejorar diariamente.
+Mantengo el entusiasmo y esfuerzo total sin importar el marcador.
+Mantengo mi compromiso y disciplina en todos los entrenamientos y partidos.
+CUESTIONARIO 2: INVENTARIO DE HABILIDADES DE AFRONTAMIENTO DEPORTIVO (ACSI-28)
+Instrucciones: Selecciona la frecuencia con la que experimentas las siguientes situaciones en la práctica de tu deporte.
+Opciones de respuesta: 1 = Casi nunca | 2 = A veces | 3 = A menudo | 4 = Casi siempre
+
+Diaria o semanalmente establezco metas muy específicas que guían lo que hago.
+Obtengo el máximo provecho de mi talento y habilidades.
+Cuando un entrenador me dice cómo corregir un error, tiendo a tomarlo como algo personal y me molesta.
+Puedo concentrarme y bloquear las distracciones.
+Permanezco positivo y entusiasta durante la competencia, sin importar cómo vayan las cosas.
+Tiendo a rendir mejor bajo presión porque pienso con mayor claridad.
+Me preocupa bastante lo que otros piensen de mi rendimiento.
+Tiendo a planificar mucho cómo alcanzar mis metas.
+Me siento seguro de que jugaré bien.
+Cuando un entrenador me critica, me molesto más de lo que me ayuda.
+Me resulta fácil evitar que pensamientos distractores interfieran.
+Me presiono demasiado preocupándome por cómo rendiré.
+Establezco mis propias metas para cada entrenamiento.
+No necesito que me impulsen a entrenar; doy el 100%.
+Si un entrenador me critica o me grita, corrijo el error sin alterarme.
+Manejo muy bien las situaciones inesperadas.
+Cuando las cosas van mal, me digo que mantenga la calma y funciona.
+Cuanta más presión hay, más disfruto la competencia.
+Durante la competencia me preocupa cometer errores o fallar.
+Tengo mi plan de juego preparado antes de competir.
+Cuando me siento demasiado tenso, puedo relajarme rápidamente.
+Las situaciones de presión son desafíos que acepto.
+Imagino qué ocurrirá si fracaso.
+Mantengo el control emocional sin importar cómo vayan las cosas.
+Me resulta fácil dirigir mi atención a un solo objetivo.
+Cuando no alcanzo mis metas, me esfuerzo aún más.
+Mejoro escuchando atentamente las indicaciones del entrenador.
+Cometo menos errores bajo presión porque me concentro mejor.
+CUESTIONARIO 3: CUESTIONARIO DE COHESIÓN GRUPAL (GEQ)
+Instrucciones: Indica tu nivel de acuerdo o desacuerdo con cada una de las afirmaciones respecto a tu equipo en los últimos 3 meses.
+Escala de respuesta: 1 = Totalmente en desacuerdo ... 9 = Totalmente de acuerdo
+
+No disfruto formar parte de las actividades sociales de este equipo.
+No estoy satisfecho(a) con la cantidad de tiempo de juego o participación que tengo.
+No voy a extrañar a los miembros de este equipo cuando termine la temporada.
+No estoy satisfecho(a) con el nivel de deseo de ganar de mi equipo.
+Algunos de mis mejores amigos están en este equipo.
+Este equipo no me brinda suficientes oportunidades para mejorar mi rendimiento personal.
+Prefiero asistir a otras reuniones sociales que a las reuniones del equipo.
+No me gusta el estilo de juego o trabajo de este equipo.
+Para mí, este equipo es uno de los grupos sociales más importantes a los que pertenezco.
+Nuestro equipo está unido para alcanzar sus objetivos de rendimiento.
+Los miembros de nuestro equipo prefieren salir por su cuenta que reunirse como equipo.
+Todos asumimos la responsabilidad por cualquier derrota o bajo rendimiento del equipo.
+Los miembros de nuestro equipo rara vez conviven juntos fuera del deporte.
+Los miembros de nuestro equipo tienen aspiraciones contradictorias respecto al rendimiento del equipo.
+A los miembros de nuestro equipo les gustaría pasar tiempo juntos fuera de la temporada.
+Si algún miembro tiene problemas durante el entrenamiento, todos quieren ayudarle para que vuelva a integrarse.
+Los miembros de nuestro equipo no permanecen unidos fuera de los entrenamientos y los partidos.
+Los miembros de nuestro equipo no se comunican libremente sobre las responsabilidades de cada atleta durante la competencia.
+CUESTIONARIO 4: PERFIL DE ESTADOS DE ÁNIMO - VERSIÓN ABREVIADA (POMS)
+Instrucciones: Valora cómo te has sentido en el momento actual / durante la última semana indicando la intensidad de cada estado.
+Escala de respuesta: 0 = Nada | 1 = Un poco | 2 = Moderadamente | 3 = Bastante | 4 = Muchísimo
+
+Enfadado
+Agotado
+Lleno de energía
+Amable
+Con los nervios de punta
+Infeliz
+Malhumorado
+Fatigado
+Enérgico
+Comprensivo
+Nervioso
+Triste
+Irritable
+Cansado
+Activo
+Servicial
+Tenso
+Desesperanzado
+Molesto
+Débil
+Animado
+Amistoso
+Agitado
+Solo
+Resentido
+Exhausto
+Vigoroso
+Considerado (con los demás)
+Inquieto
+Melancólico
+
