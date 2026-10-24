@@ -23,7 +23,7 @@ def login(correo, password):
 
 def registrar(correo, password, nombre):
     try:
-        nuevo = {"correo": correo, "password": password, "nombre": nombre, "rol": "jugador", "pruebas_desbloqueadas": "Ninguna"}
+        nuevo = {"correo": correo, "password": password, "nombre": nombre, "rol": "jugador", "pruebas_desbloqueadas": "Ninguna", "periodo_asignado": "No definido"}
         supabase.table("usuarios").insert(nuevo).execute()
         st.success("Registro exitoso. Inicia sesión.")
     except Exception as e:
@@ -162,15 +162,23 @@ else:
             st.subheader("Asignar Pruebas al Roster")
             jugadores = supabase.table("usuarios").select("*").eq("rol", "jugador").execute()
             for jug in jugadores.data:
-                with st.expander(f"🏈 {jug['nombre']} | Asignada: {jug.get('pruebas_desbloqueadas', 'Ninguna')}"):
-                    col1, col2 = st.columns([3, 1])
+                estado_actual = jug.get('pruebas_desbloqueadas', 'Ninguna')
+                periodo_actual = jug.get('periodo_asignado', 'No definido')
+                
+                with st.expander(f"🏈 {jug['nombre']} | Asignada: {estado_actual} ({periodo_actual})"):
+                    col1, col2, col3 = st.columns([2, 2, 1])
                     with col1:
-                        prueba_sel = st.selectbox("Selecciona la prueba a enviar:", ["Ninguna", "POMS", "ACSI-28", "IPED", "GEQ", "Todas"], key=f"sel_{jug['id']}")
+                        prueba_sel = st.selectbox("Selecciona la prueba a enviar:", ["Ninguna", "POMS", "ACSI-28", "IPED", "GEQ", "Todas"], key=f"sel_p_{jug['id']}")
                     with col2:
+                        periodo_sel = st.selectbox("Temporada actual:", ["Pretemporada", "Temporada Regular", "Postemporada"], key=f"sel_t_{jug['id']}")
+                    with col3:
                         st.write("") 
                         st.write("")
                         if st.button("Enviar", key=f"btn_{jug['id']}"):
-                            supabase.table("usuarios").update({"pruebas_desbloqueadas": prueba_sel}).eq("id", jug["id"]).execute()
+                            supabase.table("usuarios").update({
+                                "pruebas_desbloqueadas": prueba_sel,
+                                "periodo_asignado": periodo_sel
+                            }).eq("id", jug["id"]).execute()
                             st.success(f"Prueba actualizada para {jug['nombre']}")
                             st.rerun()
 
@@ -181,7 +189,6 @@ else:
             
             for jug in jugadores_exp.data:
                 with st.expander(f"📁 Expediente: {jug['nombre']}"):
-                    # Extraer evaluaciones del jugador
                     evals_jugador = supabase.table("evaluaciones").select("*").eq("jugador_id", jug["id"]).order("id", desc=False).execute()
                     
                     if not evals_jugador.data:
@@ -192,13 +199,11 @@ else:
                         for e in evals_jugador.data:
                             tipo = e.get("tipo_prueba", "Prueba")
                             periodo = e.get("periodo", "No definido")
-                            fecha_aprox = f"ID:{e['id']}" # Referencia temporal simple
                             perfil_ia = e.get("perfil_ia", "Sin análisis")
                             notas_psic = e.get("notas_psicologo", "Sin notas")
                             
                             st.write(f"- **{tipo}** ({periodo}) - Estado: {e.get('estado')}")
                             
-                            # Construir el texto que se le mandará a la IA para el resumen
                             historial_texto += f"\n--- PRUEBA: {tipo} | PERIODO: {periodo} ---\nAnálisis IA original: {perfil_ia}\nNotas del Psicólogo: {notas_psic}\n"
                         
                         st.markdown("---")
@@ -217,7 +222,6 @@ else:
                             st.success("Resumen generado y guardado exitosamente.")
                             st.rerun()
 
-
     # ==========================================
     # VISTA ATLETA (JUGADOR)
     # ==========================================
@@ -228,21 +232,15 @@ else:
         # --- TAB: PRUEBA PENDIENTE ---
         with t_prueba:
             prueba_asignada = usuario_actual.get("pruebas_desbloqueadas", "Ninguna")
+            periodo_asignado = usuario_actual.get("periodo_asignado", "No definido")
             
             if prueba_asignada == "Ninguna":
                 st.info("No tienes pruebas asignadas en este momento. El staff psicológico te notificará cuando debas realizar una evaluación.")
             else:
                 st.write(f"Tienes asignada la evaluación: **{prueba_asignada}**. Responde con honestidad.")
                 
-                # Opciones de periodo general para las pruebas
-                periodo_opciones = ["Pretemporada", "Temporada Regular", "Postemporada"]
-                
                 if prueba_asignada in ["POMS", "Todas"]:
                     with st.expander("📝 Abrir Cuestionario POMS", expanded=True):
-                        st.write("Selecciona el periodo actual de la temporada:")
-                        periodo_poms = st.selectbox("Periodo", periodo_opciones, key="per_poms")
-                        st.markdown("---")
-                        
                         items_poms = [
                             "Enfadado", "Agotado", "Lleno de energía", "Amable", "Con los nervios de punta", 
                             "Infeliz", "Malhumorado", "Fatigado", "Enérgico", "Comprensivo", 
@@ -271,22 +269,18 @@ else:
                                 supabase.table("evaluaciones").insert({
                                     "jugador_id": usuario_actual["id"], 
                                     "tipo_prueba": "POMS", 
-                                    "periodo": periodo_poms,
+                                    "periodo": periodo_asignado,
                                     "poms_total": sum(valores), 
                                     "acsi_total": 0, 
                                     "perfil_ia": perfil,
                                     "respuestas_detalladas": resp_crudas
                                 }).execute()
-                                supabase.table("usuarios").update({"pruebas_desbloqueadas": "Ninguna"}).eq("id", usuario_actual["id"]).execute()
+                                supabase.table("usuarios").update({"pruebas_desbloqueadas": "Ninguna", "periodo_asignado": "No definido"}).eq("id", usuario_actual["id"]).execute()
                             st.success("Enviado exitosamente.")
                             st.rerun()
 
                 if prueba_asignada in ["ACSI-28", "Todas"]:
                     with st.expander("📝 Abrir Cuestionario ACSI-28", expanded=True):
-                        st.write("Selecciona el periodo actual de la temporada:")
-                        periodo_acsi = st.selectbox("Periodo", periodo_opciones, key="per_acsi")
-                        st.markdown("---")
-                        
                         items_acsi = [
                             "Diaria o semanalmente establezco metas muy especificas que guian lo que hago.",
                             "Obtengo el maximo provecho de mi talento y habilidades.",
@@ -330,22 +324,18 @@ else:
                                 supabase.table("evaluaciones").insert({
                                     "jugador_id": usuario_actual["id"], 
                                     "tipo_prueba": "ACSI-28", 
-                                    "periodo": periodo_acsi,
+                                    "periodo": periodo_asignado,
                                     "poms_total": 0, 
                                     "acsi_total": sum(v), 
                                     "perfil_ia": perfil,
                                     "respuestas_detalladas": resp_crudas
                                 }).execute()
-                                supabase.table("usuarios").update({"pruebas_desbloqueadas": "Ninguna"}).eq("id", usuario_actual["id"]).execute()
+                                supabase.table("usuarios").update({"pruebas_desbloqueadas": "Ninguna", "periodo_asignado": "No definido"}).eq("id", usuario_actual["id"]).execute()
                             st.success("Enviado exitosamente.")
                             st.rerun()
 
                 if prueba_asignada in ["IPED", "Todas"]:
                     with st.expander("📝 Abrir Cuestionario IPED", expanded=True):
-                        st.write("Selecciona el periodo actual de la temporada:")
-                        periodo_iped = st.selectbox("Periodo", periodo_opciones, key="per_iped")
-                        st.markdown("---")
-                        
                         items_iped = [
                             "Me veo mas como un ganador que como un perdedor durante las competiciones.",
                             "Puedo mantener un flujo de energia positiva en situaciones dificiles.",
@@ -381,22 +371,18 @@ else:
                                 supabase.table("evaluaciones").insert({
                                     "jugador_id": usuario_actual["id"], 
                                     "tipo_prueba": "IPED", 
-                                    "periodo": periodo_iped,
+                                    "periodo": periodo_asignado,
                                     "poms_total": 0, 
                                     "acsi_total": 0, 
                                     "perfil_ia": perfil,
                                     "respuestas_detalladas": resp_crudas
                                 }).execute()
-                                supabase.table("usuarios").update({"pruebas_desbloqueadas": "Ninguna"}).eq("id", usuario_actual["id"]).execute()
+                                supabase.table("usuarios").update({"pruebas_desbloqueadas": "Ninguna", "periodo_asignado": "No definido"}).eq("id", usuario_actual["id"]).execute()
                             st.success("Enviado exitosamente.")
                             st.rerun()
 
                 if prueba_asignada in ["GEQ", "Todas"]:
                     with st.expander("📝 Abrir Cuestionario GEQ", expanded=True):
-                        st.write("Selecciona el periodo actual de la temporada:")
-                        periodo_geq = st.selectbox("Periodo", periodo_opciones, key="per_geq")
-                        st.markdown("---")
-                        
                         items_geq = [
                             "No disfruto formar parte de las actividades sociales de este equipo.",
                             "No estoy satisfecho(a) con la cantidad de tiempo de juego o participacion que tengo.",
@@ -430,13 +416,13 @@ else:
                                 supabase.table("evaluaciones").insert({
                                     "jugador_id": usuario_actual["id"], 
                                     "tipo_prueba": "GEQ", 
-                                    "periodo": periodo_geq,
+                                    "periodo": periodo_asignado,
                                     "poms_total": 0, 
                                     "acsi_total": 0, 
                                     "perfil_ia": perfil,
                                     "respuestas_detalladas": resp_crudas
                                 }).execute()
-                                supabase.table("usuarios").update({"pruebas_desbloqueadas": "Ninguna"}).eq("id", usuario_actual["id"]).execute()
+                                supabase.table("usuarios").update({"pruebas_desbloqueadas": "Ninguna", "periodo_asignado": "No definido"}).eq("id", usuario_actual["id"]).execute()
                             st.success("Enviado exitosamente.")
                             st.rerun()
 
