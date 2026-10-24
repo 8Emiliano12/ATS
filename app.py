@@ -1,23 +1,13 @@
 import streamlit as st
 from supabase import create_client, Client
 import google.generativeai as genai
-import datetime
 
 # --- CONFIGURACIÓN SEGURA ---
 supabase: Client = create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-modelo_ia = genai.GenerativeModel('gemini-1.5-flash')
+modelo_ia = genai.GenerativeModel('gemini-2.5-flash')
 
 st.set_page_config(page_title="ATS Pumas CU", page_icon="🏈", layout="wide")
-
-# --- DIAGNÓSTICO DE IA (EN BARRA LATERAL) ---
-try:
-    st.sidebar.warning("Modelos detectados por tu API Key:")
-    for m in genai.list_models():
-        if 'generateContent' in m.supported_generation_methods:
-            st.sidebar.write(m.name)
-except Exception as e:
-    st.sidebar.error(f"Error al listar modelos: {e}")
 
 # --- ESTADO DE SESIÓN ---
 if "usuario" not in st.session_state:
@@ -127,5 +117,4 @@ else:
                     "acsi_total": acsi_val,
                     "perfil_ia": perfil
                 }
-                supabase.table("evaluaciones").insert(nueva_eval).execute()
-            st.success("Resultados enviados correctamente. El staff revisará tu perfil.")
+                supabase.table("evalu
