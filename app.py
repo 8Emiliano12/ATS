@@ -93,6 +93,10 @@ else:
                 tipo = ev.get("tipo_prueba", "Evaluación")
                 
                 with st.expander(f"🔴 NUEVA - {nombre_jugador} (Prueba: {tipo})", expanded=False):
+                    
+                    with st.expander("📋 Ver Respuestas del Atleta (Detalle)"):
+                        st.text(ev.get("respuestas_detalladas", "Respuestas individuales no guardadas en versiones anteriores."))
+
                     st.write("**Perfil IA Generado:**")
                     st.write(ev.get("perfil_ia", "No generado"))
                     
@@ -116,6 +120,8 @@ else:
                     nombre_jugador = ev['usuarios']['nombre'] if ev['usuarios'] else "Desconocido"
                     tipo = ev.get("tipo_prueba", "Evaluación")
                     with st.expander(f"🟢 REVISADA - {nombre_jugador} (Prueba: {tipo})"):
+                        with st.expander("📋 Ver Respuestas del Atleta (Detalle)"):
+                            st.text(ev.get("respuestas_detalladas", "Respuestas individuales no guardadas en versiones anteriores."))
                         st.write("**Perfil IA:**\n", ev.get("perfil_ia", ""))
                         st.write("**Tus Notas:**\n", ev.get("notas_psicologo", "Sin notas previas."))
 
@@ -176,6 +182,7 @@ else:
             else:
                 st.write(f"Tienes asignada la evaluación: **{prueba_asignada}**. Responde con honestidad.")
                 
+                # --- POMS ---
                 if prueba_asignada in ["POMS", "Todas"]:
                     with st.expander("📝 Abrir Cuestionario POMS", expanded=True):
                         items_poms = [
@@ -199,13 +206,25 @@ else:
                             depresion = sum([valores[5], valores[11], valores[17], valores[23], valores[29]])
                             
                             detalles = f"[POMS] Cólera: {colera}, Fatiga: {fatiga}, Vigor: {vigor}, Amistad: {amistad}, Tensión: {tension}, Depresión: {depresion}"
+                            
+                            # Generar texto crudo para el psicólogo
+                            resp_crudas = "\n".join([f"{item}: {resp}" for item, resp in zip(items_poms, respuestas_poms)])
+                            
                             with st.spinner("Enviando y analizando..."):
                                 perfil = generar_perfil_ia(usuario_actual['nombre'], detalles)
-                                supabase.table("evaluaciones").insert({"jugador_id": usuario_actual["id"], "tipo_prueba": "POMS", "poms_total": 0, "acsi_total": 0, "perfil_ia": perfil}).execute()
+                                supabase.table("evaluaciones").insert({
+                                    "jugador_id": usuario_actual["id"], 
+                                    "tipo_prueba": "POMS", 
+                                    "poms_total": sum(valores), 
+                                    "acsi_total": 0, 
+                                    "perfil_ia": perfil,
+                                    "respuestas_detalladas": resp_crudas
+                                }).execute()
                                 supabase.table("usuarios").update({"pruebas_desbloqueadas": "Ninguna"}).eq("id", usuario_actual["id"]).execute()
                             st.success("Enviado exitosamente.")
                             st.rerun()
 
+                # --- ACSI-28 ---
                 if prueba_asignada in ["ACSI-28", "Todas"]:
                     with st.expander("📝 Abrir Cuestionario ACSI-28", expanded=True):
                         items_acsi = [
@@ -244,13 +263,25 @@ else:
                         if st.button("Enviar ACSI-28"):
                             v = [int(r.split(" ")[0]) for r in respuestas_acsi]
                             detalles = f"[ACSI-28] Adversidad: {sum(v[0:4])}, Presión: {sum(v[4:8])}, Metas: {sum(v[8:12])}, Concentración: {sum(v[12:16])}, Libre Preocupación: {sum(v[16:20])}, Confianza: {sum(v[20:24])}, Entrenabilidad: {sum(v[24:28])} (Total: {sum(v)})"
+                            
+                            # Generar texto crudo
+                            resp_crudas = "\n".join([f"P{i+1}: {resp}" for i, resp in enumerate(respuestas_acsi)])
+                            
                             with st.spinner("Enviando y analizando..."):
                                 perfil = generar_perfil_ia(usuario_actual['nombre'], detalles)
-                                supabase.table("evaluaciones").insert({"jugador_id": usuario_actual["id"], "tipo_prueba": "ACSI-28", "poms_total": 0, "acsi_total": 0, "perfil_ia": perfil}).execute()
+                                supabase.table("evaluaciones").insert({
+                                    "jugador_id": usuario_actual["id"], 
+                                    "tipo_prueba": "ACSI-28", 
+                                    "poms_total": 0, 
+                                    "acsi_total": sum(v), 
+                                    "perfil_ia": perfil,
+                                    "respuestas_detalladas": resp_crudas
+                                }).execute()
                                 supabase.table("usuarios").update({"pruebas_desbloqueadas": "Ninguna"}).eq("id", usuario_actual["id"]).execute()
                             st.success("Enviado exitosamente.")
                             st.rerun()
 
+                # --- IPED ---
                 if prueba_asignada in ["IPED", "Todas"]:
                     with st.expander("📝 Abrir Cuestionario IPED", expanded=True):
                         items_iped = [
@@ -281,13 +312,24 @@ else:
                         if st.button("Enviar IPED"):
                             v = [int(r.split(" ")[0]) for r in respuestas_iped]
                             detalles = f"[IPED] AC:{sum(v[0:3])}, CAN:{sum(v[3:6])}, CAT:{sum(v[6:9])}, CVI:{sum(v[9:12])}, NM:{sum(v[12:15])}, CAP:{sum(v[15:18])}, CAC:{sum(v[18:20])}"
+                            
+                            resp_crudas = "\n".join([f"P{i+1}: {resp}" for i, resp in enumerate(respuestas_iped)])
+                            
                             with st.spinner("Enviando y analizando..."):
                                 perfil = generar_perfil_ia(usuario_actual['nombre'], detalles)
-                                supabase.table("evaluaciones").insert({"jugador_id": usuario_actual["id"], "tipo_prueba": "IPED", "poms_total": 0, "acsi_total": 0, "perfil_ia": perfil}).execute()
+                                supabase.table("evaluaciones").insert({
+                                    "jugador_id": usuario_actual["id"], 
+                                    "tipo_prueba": "IPED", 
+                                    "poms_total": 0, 
+                                    "acsi_total": 0, 
+                                    "perfil_ia": perfil,
+                                    "respuestas_detalladas": resp_crudas
+                                }).execute()
                                 supabase.table("usuarios").update({"pruebas_desbloqueadas": "Ninguna"}).eq("id", usuario_actual["id"]).execute()
                             st.success("Enviado exitosamente.")
                             st.rerun()
 
+                # --- GEQ ---
                 if prueba_asignada in ["GEQ", "Todas"]:
                     with st.expander("📝 Abrir Cuestionario GEQ", expanded=True):
                         items_geq = [
@@ -316,9 +358,19 @@ else:
                             tarea = round(sum(respuestas_geq[:9]) / 9, 2)
                             social = round(sum(respuestas_geq[9:]) / 9, 2)
                             detalles = f"[GEQ] Promedio Tarea: {tarea}, Promedio Social: {social}"
+                            
+                            resp_crudas = "\n".join([f"P{i+1}: Valor {resp}" for i, resp in enumerate(respuestas_geq)])
+                            
                             with st.spinner("Enviando y analizando..."):
                                 perfil = generar_perfil_ia(usuario_actual['nombre'], detalles)
-                                supabase.table("evaluaciones").insert({"jugador_id": usuario_actual["id"], "tipo_prueba": "GEQ", "poms_total": 0, "acsi_total": 0, "perfil_ia": perfil}).execute()
+                                supabase.table("evaluaciones").insert({
+                                    "jugador_id": usuario_actual["id"], 
+                                    "tipo_prueba": "GEQ", 
+                                    "poms_total": 0, 
+                                    "acsi_total": 0, 
+                                    "perfil_ia": perfil,
+                                    "respuestas_detalladas": resp_crudas
+                                }).execute()
                                 supabase.table("usuarios").update({"pruebas_desbloqueadas": "Ninguna"}).eq("id", usuario_actual["id"]).execute()
                             st.success("Enviado exitosamente.")
                             st.rerun()
