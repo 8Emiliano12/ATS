@@ -176,9 +176,17 @@ else:
             else:
                 st.write(f"Tienes asignada la evaluación: **{prueba_asignada}**. Responde con honestidad.")
                 
+                # --- Lógica de POMS ---
                 if prueba_asignada in ["POMS", "Todas"]:
                     with st.expander("📝 Abrir Cuestionario POMS", expanded=True):
-                        items_poms = ["Enfadado", "Agotado", "Lleno de energía", "Amable", "Con los nervios de punta", "Infeliz", "Malhumorado", "Fatigado", "Enérgico", "Comprensivo", "Nervioso", "Triste", "Irritable", "Cansado", "Activo", "Servicial", "Tenso", "Desesperanzado", "Molesto", "Débil", "Animado", "Amistoso", "Agitado", "Solo", "Resentido", "Exhausto", "Vigoroso", "Considerado con los demás", "Inquieto", "Melancólico"]
+                        items_poms = [
+                            "Enfadado", "Agotado", "Lleno de energía", "Amable", "Con los nervios de punta", 
+                            "Infeliz", "Malhumorado", "Fatigado", "Enérgico", "Comprensivo", 
+                            "Nervioso", "Triste", "Irritable", "Cansado", "Activo", 
+                            "Servicial", "Tenso", "Desesperanzado", "Molesto", "Débil", 
+                            "Animado", "Amistoso", "Agitado", "Solo", "Resentido", 
+                            "Exhausto", "Vigoroso", "Considerado con los demás", "Inquieto", "Melancólico"
+                        ]
                         opciones_poms = ["0 (Nada)", "1 (Un poco)", "2 (Moderadamente)", "3 (Bastante)", "4 (Muchísimo)"]
                         respuestas_poms = [st.selectbox(f"{i+1}. {item}", opciones_poms, key=f"poms_{i}") for i, item in enumerate(items_poms)]
                             
@@ -199,9 +207,39 @@ else:
                             st.success("Enviado exitosamente.")
                             st.rerun()
 
+                # --- Lógica de ACSI-28 ---
                 if prueba_asignada in ["ACSI-28", "Todas"]:
                     with st.expander("📝 Abrir Cuestionario ACSI-28", expanded=True):
-                        items_acsi = ["Establezco metas específicas...", "Obtengo el máximo provecho...", "Tiendo a tomar errores personal...", "Puedo concentrarme...", "Permanezco positivo...", "Rindo mejor bajo presión...", "Me preocupa lo que piensen...", "Planifico cómo alcanzar metas...", "Me siento seguro...", "Me molesta la crítica...", "Evito pensamientos distractores...", "Me presiono demasiado...", "Establezco metas por entrenamiento...", "No necesito impulso...", "Corrijo sin alterarme...", "Manejo situaciones inesperadas...", "Mantengo calma...", "Disfruto la presión...", "Me preocupa cometer errores...", "Tengo plan de juego...", "Me relajo rápidamente...", "Acepto presión...", "Imagino si fracaso...", "Control emocional...", "Atención a un objetivo...", "Me esfuerzo más...", "Mejoro escuchando...", "Cometo menos errores bajo presión..."]
+                        items_acsi = [
+                            "Diaria o semanalmente establezco metas muy especificas que guian lo que hago.",
+                            "Obtengo el maximo provecho de mi talento y habilidades.",
+                            "Cuando un entrenador me dice como corregir un error, tiendo a tomarlo como algo personal y me molesta.",
+                            "Puedo concentrarme y bloquear las distracciones.",
+                            "Permanezco positivo y entusiasta durante la competencia, sin importar como vayan las cosas.",
+                            "Tiendo a rendir mejor bajo presion porque pienso con mayor claridad.",
+                            "Me preocupa bastante lo que otros piensen de mi rendimiento.",
+                            "Tiendo a planificar mucho como alcanzar mis metas.",
+                            "Me siento seguro de que jugare bien.",
+                            "Cuando un entrenador me critica, me molesto mas de lo que me ayuda.",
+                            "Me resulta facil evitar que pensamientos distractores interfieran.",
+                            "Me presiono demasiado preocupandome por como rendire.",
+                            "Establezco mis propias metas para cada entrenamiento.",
+                            "No necesito que me impulsen a entrenar; doy el 100 por ciento.",
+                            "Si un entrenador me critica o me grita, corrijo el error sin alterarme.",
+                            "Manejo muy bien las situaciones inesperadas.",
+                            "Cuando las cosas van mal, me digo que mantenga la calma y funciona.",
+                            "Cuanta mas presion hay, mas disfruto la competencia.",
+                            "Durante la competencia me preocupa cometer errores o fallar.",
+                            "Tengo mi plan de juego preparado antes de competir.",
+                            "Cuando me siento demasiado tenso, puedo relajarme rapidamente.",
+                            "Las situaciones de presion son desafios que acepto.",
+                            "Imagino que ocurrira si fracaso.",
+                            "Mantengo el control emocional sin importar como vayan las cosas.",
+                            "Me resulta facil dirigir mi atencion a un solo objetivo.",
+                            "Cuando no alcanzo mis metas, me esfuerzo aun mas.",
+                            "Mejoro escuchando atentamente las indicaciones del entrenador.",
+                            "Cometo menos errores bajo presion porque me concentro mejor."
+                        ]
                         opciones_acsi = ["0 - Casi nunca", "1 - A veces", "2 - A menudo", "3 - Casi siempre"]
                         respuestas_acsi = [st.selectbox(f"{i+1}. {item}", opciones_acsi, key=f"acsi_{i}") for i, item in enumerate(items_acsi)]
                             
@@ -215,9 +253,31 @@ else:
                             st.success("Enviado exitosamente.")
                             st.rerun()
 
+                # --- Lógica de IPED ---
                 if prueba_asignada in ["IPED", "Todas"]:
                     with st.expander("📝 Abrir Cuestionario IPED", expanded=True):
-                        items_iped = ["Me veo como ganador...", "Mantengo flujo de energía...", "Fácil concentrarme...", "Imagino ejecuciones...", "Altamente motivado...", "Transformo errores...", "Actitud positiva...", "Creo en mi capacidad...", "Controlo ira...", "Enfoco atención...", "Practico mentalmente...", "Metas me hacen trabajar...", "Disfruto presión...", "Me comunico abierta...", "Confianza al cometer errores...", "Elimino emociones negativas...", "Foco en tarea...", "Visualizo soluciones...", "Siento entusiasmo...", "Sensación de desafío..."]
+                        items_iped = [
+                            "Me veo mas como un ganador que como un perdedor durante las competiciones.",
+                            "Puedo mantener un flujo de energia positiva en situaciones dificiles.",
+                            "Me resulta facil concentrarme y bloquear distracciones.",
+                            "Imagino con claridad mis ejecuciones tecnicas antes de competir.",
+                            "Estoy altamente motivado para entrenar lo mejor que puedo cada dia.",
+                            "Puedo transformar los errores en oportunidades de aprendizaje durante el juego.",
+                            "Mantengo una actitud positiva y constructiva con mis companeros y entrenadores.",
+                            "Creo firmemente en mi capacidad como deportista para alcanzar el exito.",
+                            "Controlo la ira y la frustracion cuando las cosas no salen como quiero.",
+                            "Puedo enfocar mi atencion de inmediato en el siguiente punto o jugada.",
+                            "Practico mentalmente mis habilidades fisicas y tacticas con frecuencia.",
+                            "Las metas que me he propuesto me hacen trabajar duro constantemente.",
+                            "Puedo disfrutar de la competicion incluso en momentos de alta presion.",
+                            "Me comunico de manera respetuosa y abierta sobre mis responsabilidades en el equipo.",
+                            "Mantengo la confianza en mi mismo aun cuando pierdo o cometo errores.",
+                            "Elimino emociones negativas rapidamente para volver a concentrarme.",
+                            "Mantengo el foco en la tarea presente sin pensar en errores pasados.",
+                            "Visualizo soluciones exitosas a situaciones dificiles antes de que ocurran.",
+                            "Siento un genuino entusiasmo y disfrute al practicar mi deporte.",
+                            "Me lleno de sensacion de desafio e inspiracion en situaciones complejas."
+                        ]
                         opciones_iped = ["1 - Casi nunca", "2 - Pocas veces", "3 - A veces", "4 - A menudo", "5 - Casi siempre"]
                         respuestas_iped = [st.selectbox(f"{i+1}. {item}", opciones_iped, key=f"iped_{i}") for i, item in enumerate(items_iped)]
                             
@@ -231,9 +291,29 @@ else:
                             st.success("Enviado exitosamente.")
                             st.rerun()
 
+                # --- Lógica de GEQ ---
                 if prueba_asignada in ["GEQ", "Todas"]:
                     with st.expander("📝 Abrir Cuestionario GEQ", expanded=True):
-                        items_geq = ["No disfruto actividades sociales...", "No satisfecho con tiempo de juego...", "No extrañaré al equipo...", "No satisfecho con deseo de ganar...", "Mejores amigos están aquí...", "Sin oportunidades para mejorar...", "Prefiero otras reuniones...", "No me gusta el estilo de trabajo...", "Es mi grupo social importante...", "Equipo unido para objetivos...", "Prefieren salir por su cuenta...", "Asumimos responsabilidad...", "Rara vez convivimos fuera...", "Aspiraciones contradictorias...", "Pasar tiempo juntos fuera de temporada...", "Todos ayudan si hay problemas...", "No permanecemos unidos fuera...", "No nos comunicamos libremente..."]
+                        items_geq = [
+                            "No disfruto formar parte de las actividades sociales de este equipo.",
+                            "No estoy satisfecho(a) con la cantidad de tiempo de juego o participacion que tengo.",
+                            "No voy a extrañar a los miembros de este equipo cuando termine la temporada.",
+                            "No estoy satisfecho(a) con el nivel de deseo de ganar de mi equipo.",
+                            "Algunos de mis mejores amigos estan en este equipo.",
+                            "Este equipo no me brinda suficientes oportunidades para mejorar mi rendimiento personal.",
+                            "Prefiero asistir a otras reuniones sociales que a las reuniones del equipo.",
+                            "No me gusta el estilo de juego o trabajo de este equipo.",
+                            "Para mi, este equipo es uno de los grupos sociales mas importantes a los que pertenezco.",
+                            "Nuestro equipo esta unido para alcanzar sus objetivos de rendimiento.",
+                            "Los miembros de nuestro equipo prefieren salir por su cuenta que reunirse como equipo.",
+                            "Todos asumimos la responsabilidad por cualquier derrota o bajo rendimiento del equipo.",
+                            "Los miembros de nuestro equipo rara vez conviven juntos fuera del deporte.",
+                            "Los miembros de nuestro equipo tienen aspiraciones contradictorias respecto al rendimiento del equipo.",
+                            "A los miembros de nuestro equipo les gustaria pasar tiempo juntos fuera de la temporada.",
+                            "Si algun miembro tiene problemas durante el entrenamiento, todos quieren ayudarle para que vuelva a integrarse.",
+                            "Los miembros de nuestro equipo no permanecen unidos fuera de los entrenamientos y los partidos.",
+                            "Los miembros de nuestro equipo no se comunican libremente sobre las responsabilidades de cada atleta durante la competencia."
+                        ]
                         respuestas_geq = [st.slider(f"{i+1}. {item}", 1, 9, 5, key=f"geq_{i}") for i, item in enumerate(items_geq)]
                             
                         if st.button("Enviar GEQ"):
