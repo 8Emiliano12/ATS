@@ -33,7 +33,18 @@ def generar_perfil_ia(nombre, detalles_prueba):
     try:
         with open("manual.txt", "r", encoding="utf-8") as f:
             manual = f.read()
-        prompt = f"Actúa como Psicólogo de Pumas CU. Evalúa utilizando ESTE manual:\n\n{manual}\n\nJUGADOR: {nombre}\nRESULTADOS:\n{detalles_prueba}\n\nGenera el perfil psicológico estructurado y 2 recomendaciones específicas."
+        
+        # --- NUEVO PROMPT DIRECTO Y CONCRETO ---
+        prompt = f"""Actúa como Psicólogo Deportivo de Pumas CU. Evalúa utilizando ESTE manual:
+
+{manual}
+
+JUGADOR: {nombre}
+RESULTADOS:
+{detalles_prueba}
+
+INSTRUCCIÓN CRÍTICA: Escribe un perfil psicológico MUY CONCRETO, DIRECTO y BREVE para el psicólogo a cargo. NO uses introducciones largas ni texto laborioso. Ve directo al grano usando viñetas (bullet points) para destacar los hallazgos principales de los puntajes y finaliza con 2 recomendaciones prácticas y claras."""
+        
         respuesta = modelo_ia.generate_content(prompt)
         return respuesta.text
     except Exception as e:
