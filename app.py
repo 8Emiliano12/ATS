@@ -90,7 +90,9 @@ else:
                 
             for ev in pendientes:
                 nombre_jugador = ev['usuarios']['nombre'] if ev['usuarios'] else "Desconocido"
-                with st.expander(f"🔴 NUEVA - {nombre_jugador} (Visualizar y Anotar)", expanded=False):
+                tipo = ev.get("tipo_prueba", "Evaluación")
+                
+                with st.expander(f"🔴 NUEVA - {nombre_jugador} (Prueba: {tipo})", expanded=False):
                     st.write("**Perfil IA Generado:**")
                     st.write(ev.get("perfil_ia", "No generado"))
                     
@@ -112,7 +114,8 @@ else:
                 st.markdown("### Historial de Pruebas Revisadas")
                 for ev in revisadas:
                     nombre_jugador = ev['usuarios']['nombre'] if ev['usuarios'] else "Desconocido"
-                    with st.expander(f"🟢 REVISADA - {nombre_jugador}"):
+                    tipo = ev.get("tipo_prueba", "Evaluación")
+                    with st.expander(f"🟢 REVISADA - {nombre_jugador} (Prueba: {tipo})"):
                         st.write("**Perfil IA:**\n", ev.get("perfil_ia", ""))
                         st.write("**Tus Notas:**\n", ev.get("notas_psicologo", "Sin notas previas."))
 
@@ -173,7 +176,6 @@ else:
             else:
                 st.write(f"Tienes asignada la evaluación: **{prueba_asignada}**. Responde con honestidad.")
                 
-                # --- Lógica de POMS ---
                 if prueba_asignada in ["POMS", "Todas"]:
                     with st.expander("📝 Abrir Cuestionario POMS", expanded=True):
                         items_poms = ["Enfadado", "Agotado", "Lleno de energía", "Amable", "Con los nervios de punta", "Infeliz", "Malhumorado", "Fatigado", "Enérgico", "Comprensivo", "Nervioso", "Triste", "Irritable", "Cansado", "Activo", "Servicial", "Tenso", "Desesperanzado", "Molesto", "Débil", "Animado", "Amistoso", "Agitado", "Solo", "Resentido", "Exhausto", "Vigoroso", "Considerado con los demás", "Inquieto", "Melancólico"]
@@ -192,12 +194,11 @@ else:
                             detalles = f"[POMS] Cólera: {colera}, Fatiga: {fatiga}, Vigor: {vigor}, Amistad: {amistad}, Tensión: {tension}, Depresión: {depresion}"
                             with st.spinner("Enviando y analizando..."):
                                 perfil = generar_perfil_ia(usuario_actual['nombre'], detalles)
-                                supabase.table("evaluaciones").insert({"jugador_id": usuario_actual["id"], "poms_total": 0, "acsi_total": 0, "perfil_ia": perfil}).execute()
+                                supabase.table("evaluaciones").insert({"jugador_id": usuario_actual["id"], "tipo_prueba": "POMS", "poms_total": 0, "acsi_total": 0, "perfil_ia": perfil}).execute()
                                 supabase.table("usuarios").update({"pruebas_desbloqueadas": "Ninguna"}).eq("id", usuario_actual["id"]).execute()
                             st.success("Enviado exitosamente.")
                             st.rerun()
 
-                # --- Lógica de ACSI-28 ---
                 if prueba_asignada in ["ACSI-28", "Todas"]:
                     with st.expander("📝 Abrir Cuestionario ACSI-28", expanded=True):
                         items_acsi = ["Establezco metas específicas...", "Obtengo el máximo provecho...", "Tiendo a tomar errores personal...", "Puedo concentrarme...", "Permanezco positivo...", "Rindo mejor bajo presión...", "Me preocupa lo que piensen...", "Planifico cómo alcanzar metas...", "Me siento seguro...", "Me molesta la crítica...", "Evito pensamientos distractores...", "Me presiono demasiado...", "Establezco metas por entrenamiento...", "No necesito impulso...", "Corrijo sin alterarme...", "Manejo situaciones inesperadas...", "Mantengo calma...", "Disfruto la presión...", "Me preocupa cometer errores...", "Tengo plan de juego...", "Me relajo rápidamente...", "Acepto presión...", "Imagino si fracaso...", "Control emocional...", "Atención a un objetivo...", "Me esfuerzo más...", "Mejoro escuchando...", "Cometo menos errores bajo presión..."]
@@ -209,12 +210,11 @@ else:
                             detalles = f"[ACSI-28] Adversidad: {sum(v[0:4])}, Presión: {sum(v[4:8])}, Metas: {sum(v[8:12])}, Concentración: {sum(v[12:16])}, Libre Preocupación: {sum(v[16:20])}, Confianza: {sum(v[20:24])}, Entrenabilidad: {sum(v[24:28])} (Total: {sum(v)})"
                             with st.spinner("Enviando y analizando..."):
                                 perfil = generar_perfil_ia(usuario_actual['nombre'], detalles)
-                                supabase.table("evaluaciones").insert({"jugador_id": usuario_actual["id"], "poms_total": 0, "acsi_total": 0, "perfil_ia": perfil}).execute()
+                                supabase.table("evaluaciones").insert({"jugador_id": usuario_actual["id"], "tipo_prueba": "ACSI-28", "poms_total": 0, "acsi_total": 0, "perfil_ia": perfil}).execute()
                                 supabase.table("usuarios").update({"pruebas_desbloqueadas": "Ninguna"}).eq("id", usuario_actual["id"]).execute()
                             st.success("Enviado exitosamente.")
                             st.rerun()
 
-                # --- Lógica de IPED ---
                 if prueba_asignada in ["IPED", "Todas"]:
                     with st.expander("📝 Abrir Cuestionario IPED", expanded=True):
                         items_iped = ["Me veo como ganador...", "Mantengo flujo de energía...", "Fácil concentrarme...", "Imagino ejecuciones...", "Altamente motivado...", "Transformo errores...", "Actitud positiva...", "Creo en mi capacidad...", "Controlo ira...", "Enfoco atención...", "Practico mentalmente...", "Metas me hacen trabajar...", "Disfruto presión...", "Me comunico abierta...", "Confianza al cometer errores...", "Elimino emociones negativas...", "Foco en tarea...", "Visualizo soluciones...", "Siento entusiasmo...", "Sensación de desafío..."]
@@ -226,12 +226,11 @@ else:
                             detalles = f"[IPED] AC:{sum(v[0:3])}, CAN:{sum(v[3:6])}, CAT:{sum(v[6:9])}, CVI:{sum(v[9:12])}, NM:{sum(v[12:15])}, CAP:{sum(v[15:18])}, CAC:{sum(v[18:20])}"
                             with st.spinner("Enviando y analizando..."):
                                 perfil = generar_perfil_ia(usuario_actual['nombre'], detalles)
-                                supabase.table("evaluaciones").insert({"jugador_id": usuario_actual["id"], "poms_total": 0, "acsi_total": 0, "perfil_ia": perfil}).execute()
+                                supabase.table("evaluaciones").insert({"jugador_id": usuario_actual["id"], "tipo_prueba": "IPED", "poms_total": 0, "acsi_total": 0, "perfil_ia": perfil}).execute()
                                 supabase.table("usuarios").update({"pruebas_desbloqueadas": "Ninguna"}).eq("id", usuario_actual["id"]).execute()
                             st.success("Enviado exitosamente.")
                             st.rerun()
 
-                # --- Lógica de GEQ ---
                 if prueba_asignada in ["GEQ", "Todas"]:
                     with st.expander("📝 Abrir Cuestionario GEQ", expanded=True):
                         items_geq = ["No disfruto actividades sociales...", "No satisfecho con tiempo de juego...", "No extrañaré al equipo...", "No satisfecho con deseo de ganar...", "Mejores amigos están aquí...", "Sin oportunidades para mejorar...", "Prefiero otras reuniones...", "No me gusta el estilo de trabajo...", "Es mi grupo social importante...", "Equipo unido para objetivos...", "Prefieren salir por su cuenta...", "Asumimos responsabilidad...", "Rara vez convivimos fuera...", "Aspiraciones contradictorias...", "Pasar tiempo juntos fuera de temporada...", "Todos ayudan si hay problemas...", "No permanecemos unidos fuera...", "No nos comunicamos libremente..."]
@@ -243,7 +242,7 @@ else:
                             detalles = f"[GEQ] Promedio Tarea: {tarea}, Promedio Social: {social}"
                             with st.spinner("Enviando y analizando..."):
                                 perfil = generar_perfil_ia(usuario_actual['nombre'], detalles)
-                                supabase.table("evaluaciones").insert({"jugador_id": usuario_actual["id"], "poms_total": 0, "acsi_total": 0, "perfil_ia": perfil}).execute()
+                                supabase.table("evaluaciones").insert({"jugador_id": usuario_actual["id"], "tipo_prueba": "GEQ", "poms_total": 0, "acsi_total": 0, "perfil_ia": perfil}).execute()
                                 supabase.table("usuarios").update({"pruebas_desbloqueadas": "Ninguna"}).eq("id", usuario_actual["id"]).execute()
                             st.success("Enviado exitosamente.")
                             st.rerun()
@@ -258,10 +257,9 @@ else:
                 
             for ev in mis_evals.data:
                 estado_tag = "🟢 Revisada" if ev.get("estado") == "Revisada" else "⏳ En Revisión"
-                with st.expander(f"{estado_tag} - Prueba #{ev['id']}"):
-                    st.write("**Perfil Generado (IA):**")
-                    st.write(ev.get("perfil_ia", ""))
-                    st.markdown("---")
+                tipo = ev.get("tipo_prueba", "Evaluación Psicológica")
+                
+                with st.expander(f"{estado_tag} - Prueba: {tipo}"):
                     st.write("**Notas del Staff Psicológico:**")
                     if ev.get("notas_psicologo"):
                         st.info(ev["notas_psicologo"])
