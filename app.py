@@ -26,8 +26,8 @@ def registrar(correo, password, nombre):
         nuevo = {"correo": correo, "password": password, "nombre": nombre, "rol": "jugador", "pruebas_desbloqueadas": "Ninguna"}
         supabase.table("usuarios").insert(nuevo).execute()
         st.success("Registro exitoso. Inicia sesión.")
-    except:
-        st.error("Error: El correo ya existe.")
+    except Exception as e:
+        st.error(f"El verdadero error de la base de datos es: {e}")
 
 def generar_perfil_ia(nombre, poms, acsi):
     try:
