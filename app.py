@@ -59,7 +59,6 @@ INSTRUCCIÓN CRÍTICA: Escribe un Resumen de Expediente MUY CONCRETO y DIRECTO e
     except Exception as e:
         return f"Error de Gemini: {e}"
 
-
 # --- INTERFAZ PRINCIPAL ---
 if st.session_state.usuario is None:
     st.title("ATS Pumas CU - Acceso")
@@ -98,7 +97,6 @@ else:
         st.title("Panel de Control - Staff Psicológico")
         t_buzon, t_agenda, t_roster, t_expediente = st.tabs(["📥 Buzón", "🗓️ Agenda", "👥 Roster", "📁 Expedientes"])
         
-        # --- TAB: BUZÓN ---
         with t_buzon:
             st.subheader("Evaluaciones Pendientes de Revisión")
             evaluaciones = supabase.table("evaluaciones").select("*, usuarios(nombre)").order("id", desc=True).execute()
@@ -135,7 +133,6 @@ else:
                             supabase.table("evaluaciones").delete().eq("id", ev["id"]).execute()
                             st.rerun()
 
-        # --- TAB: AGENDA ---
         with t_agenda:
             st.subheader("Citas Solicitadas por Atletas")
             citas = supabase.table("citas").select("*, usuarios(nombre)").order("id", desc=True).execute()
@@ -157,7 +154,6 @@ else:
                         supabase.table("citas").delete().eq("id", cita["id"]).execute()
                         st.rerun()
 
-        # --- TAB: ROSTER ---
         with t_roster:
             st.subheader("Asignar Pruebas al Roster")
             jugadores = supabase.table("usuarios").select("*").eq("rol", "jugador").execute()
@@ -182,7 +178,6 @@ else:
                             st.success(f"Prueba actualizada para {jug['nombre']}")
                             st.rerun()
 
-        # --- TAB: EXPEDIENTES ---
         with t_expediente:
             st.subheader("Expedientes Clínicos de Atletas")
             jugadores_exp = supabase.table("usuarios").select("*").eq("rol", "jugador").execute()
@@ -203,7 +198,6 @@ else:
                             notas_psic = e.get("notas_psicologo", "Sin notas")
                             
                             st.write(f"- **{tipo}** ({periodo}) - Estado: {e.get('estado')}")
-                            
                             historial_texto += f"\n--- PRUEBA: {tipo} | PERIODO: {periodo} ---\nAnálisis IA original: {perfil_ia}\nNotas del Psicólogo: {notas_psic}\n"
                         
                         st.markdown("---")
@@ -229,7 +223,6 @@ else:
         st.title("Portal del Atleta")
         t_prueba, t_historial, t_cita = st.tabs(["📋 Prueba Pendiente", "📁 Mi Historial", "📅 Agendar Cita"])
         
-        # --- TAB: PRUEBA PENDIENTE ---
         with t_prueba:
             prueba_asignada = usuario_actual.get("pruebas_desbloqueadas", "Ninguna")
             periodo_asignado = usuario_actual.get("periodo_asignado", "No definido")
@@ -426,27 +419,43 @@ else:
                             st.success("Enviado exitosamente.")
                             st.rerun()
 
-        # --- TAB: HISTORIAL DEL ATLETA ---
         with t_historial:
-            st.subheader("Mis Evaluaciones y Observaciones del Staff")
+            st.subheader("Mi Expediente y Citas")
+            
+            st.markdown("### 🗓️ Estado de mis Citas")
+            mis_citas = supabase.table("citas").select("*").eq("jugador_id", usuario_actual["id"]).order("id", desc=True).execute()
+            
+            if not mis_citas.data:
+                st.info("No has solicitado ninguna cita por el momento.")
+            else:
+                for cita in mis_citas.data:
+                    estado_cita = cita.get("estado", "Pendiente")
+                    if estado_cita == "Pendiente":
+                        st.warning(f"⏳ **En Revisión:** Cita solicitada para el {cita['fecha']} a las {cita['hora']}")
+                    elif estado_cita == "Confirmada":
+                        st.success(f"✅ **Aceptada:** Tienes una cita confirmada el {cita['fecha']} a las {cita['hora']}")
+                    else:
+                        st.info(f"ℹ️ **{estado_cita}:** {cita['fecha']} a las {cita['hora']}")
+
+            st.markdown("---")
+            st.markdown("### 🧠 Evaluaciones y Observaciones del Staff")
             mis_evals = supabase.table("evaluaciones").select("*").eq("jugador_id", usuario_actual["id"]).order("id", desc=True).execute()
             
             if not mis_evals.data:
                 st.info("Aún no tienes evaluaciones registradas.")
-                
-            for ev in mis_evals.data:
-                estado_tag = "🟢 Revisada" if ev.get("estado") == "Revisada" else "⏳ En Revisión"
-                tipo = ev.get("tipo_prueba", "Evaluación Psicológica")
-                periodo = ev.get("periodo", "No definido")
-                
-                with st.expander(f"{estado_tag} - {tipo} ({periodo})"):
-                    st.write("**Notas del Staff Psicológico:**")
-                    if ev.get("notas_psicologo"):
-                        st.info(ev["notas_psicologo"])
-                    else:
-                        st.write("El psicólogo aún no ha dejado observaciones adicionales.")
+            else:
+                for ev in mis_evals.data:
+                    estado_tag = "🟢 Revisada" if ev.get("estado") == "Revisada" else "⏳ En Revisión"
+                    tipo = ev.get("tipo_prueba", "Evaluación Psicológica")
+                    periodo = ev.get("periodo", "No definido")
+                    
+                    with st.expander(f"{estado_tag} - {tipo} ({periodo})"):
+                        st.write("**Notas del Staff Psicológico:**")
+                        if ev.get("notas_psicologo"):
+                            st.info(ev["notas_psicologo"])
+                        else:
+                            st.write("El psicólogo aún no ha dejado observaciones adicionales.")
 
-        # --- TAB: AGENDAR CITA ---
         with t_cita:
             st.subheader("Solicitar Cita con el Servicio Psicológico")
             st.write("Selecciona la fecha, hora y el motivo por el cual deseas agendar una sesión.")
