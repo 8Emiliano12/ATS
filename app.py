@@ -359,7 +359,7 @@ else:
                 
             motivo_cita = st.text_area("Motivo de la sesión (Opcional - confidencial)", placeholder="Ej. Estrés pre-competitivo, manejo de ansiedad, etc.")
             
-            if st.button("Enviar Solicitud de Cita"):
+           if st.button("Enviar Solicitud de Cita"):
                 nueva_cita = {
                     "jugador_id": usuario_actual["id"],
                     "fecha": str(fecha_cita),
@@ -367,5 +367,9 @@ else:
                     "motivo": motivo_cita,
                     "estado": "Pendiente"
                 }
-                supabase.table("citas").insert(nueva_cita).execute()
-                st.success("Tu solicitud de cita ha sido enviada al staff. Te confirmarán pronto.")
+                try:
+                    supabase.table("citas").insert(nueva_cita).execute()
+                    st.success("Tu solicitud de cita ha sido enviada al staff. Te confirmarán pronto.")
+                except Exception as e:
+                    # Esto forzará a la aplicación a imprimir el error real de la base de datos en pantalla
+                    st.error(f"Error interno de Supabase: {e}")
