@@ -37,7 +37,7 @@ def generar_perfil_ia(nombre, poms, acsi):
         respuesta = modelo_ia.generate_content(prompt)
         return respuesta.text
     except Exception as e:
-        return "Error al generar perfil IA."
+        return f"Error real de Gemini: {e}"
 
 # --- PANTALLAS ---
 if st.session_state.usuario is None:
