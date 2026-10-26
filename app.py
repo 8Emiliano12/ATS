@@ -8,7 +8,7 @@ supabase: Client = create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABAS
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 modelo_ia = genai.GenerativeModel('gemini-2.5-flash')
 
-st.set_page_config(page_title="ATS Pumas CU", page_icon="🏈", layout="wide")
+st.set_page_config(page_title="SAP Pumas CU", page_icon="🏈", layout="wide")
 
 if "usuario" not in st.session_state:
     st.session_state.usuario = None
@@ -61,7 +61,7 @@ INSTRUCCIÓN CRÍTICA: Escribe un Resumen de Expediente MUY CONCRETO y DIRECTO e
 
 # --- INTERFAZ PRINCIPAL ---
 if st.session_state.usuario is None:
-    st.title("ATS Pumas CU - Acceso")
+    st.title("SAP Pumas CU - Acceso")
     tab1, tab2 = st.tabs(["Iniciar Sesión", "Registrarse"])
     
     with tab1:
