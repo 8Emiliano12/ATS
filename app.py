@@ -90,6 +90,25 @@ else:
         st.session_state.usuario = None
         st.rerun()
 
+    # Función para ir restando las pruebas que el atleta ya envió
+    def marcar_prueba_completada(prueba_hecha):
+        asignadas_str = usuario_actual.get("pruebas_desbloqueadas", "Ninguna")
+        if asignadas_str == "Todas":
+            lista = ["POMS", "ACSI-28", "IPED", "GEQ"]
+        else:
+            lista = [p.strip() for p in asignadas_str.split(",") if p.strip() != "Ninguna"]
+            
+        if prueba_hecha in lista:
+            lista.remove(prueba_hecha)
+            
+        nuevo_estado = ", ".join(lista) if len(lista) > 0 else "Ninguna"
+        nuevo_periodo = usuario_actual.get("periodo_asignado", "No definido") if nuevo_estado != "Ninguna" else "No definido"
+        
+        supabase.table("usuarios").update({
+            "pruebas_desbloqueadas": nuevo_estado,
+            "periodo_asignado": nuevo_periodo
+        }).eq("id", usuario_actual["id"]).execute()
+
     # ==========================================
     # VISTA STAFF (PSICÓLOGO)
     # ==========================================
@@ -164,15 +183,17 @@ else:
                 with st.expander(f"🏈 {jug['nombre']} | Asignada: {estado_actual} ({periodo_actual})"):
                     col1, col2, col3 = st.columns([2, 2, 1])
                     with col1:
-                        prueba_sel = st.selectbox("Prueba a enviar:", ["Ninguna", "POMS", "ACSI-28", "IPED", "GEQ", "Todas"], key=f"sel_p_{jug['id']}")
+                        # Convertimos a multi-selector para elegir varias a la vez
+                        prueba_sel = st.multiselect("Pruebas a enviar:", ["POMS", "ACSI-28", "IPED", "GEQ"], key=f"sel_p_{jug['id']}")
                     with col2:
                         periodo_sel = st.selectbox("Etapa actual:", ["General", "Específico", "Pre temporada", "Pre competitivo", "Descarga"], key=f"sel_t_{jug['id']}")
                     with col3:
                         st.write("") 
                         st.write("")
                         if st.button("Enviar", key=f"btn_{jug['id']}"):
+                            pruebas_texto = ", ".join(prueba_sel) if len(prueba_sel) > 0 else "Ninguna"
                             supabase.table("usuarios").update({
-                                "pruebas_desbloqueadas": prueba_sel,
+                                "pruebas_desbloqueadas": pruebas_texto,
                                 "periodo_asignado": periodo_sel
                             }).eq("id", jug["id"]).execute()
                             st.success(f"Prueba actualizada para {jug['nombre']}")
@@ -227,12 +248,16 @@ else:
             prueba_asignada = usuario_actual.get("pruebas_desbloqueadas", "Ninguna")
             periodo_asignado = usuario_actual.get("periodo_asignado", "No definido")
             
+            def tiene_prueba(nombre):
+                if prueba_asignada == "Todas": return True
+                return nombre in prueba_asignada
+            
             if prueba_asignada == "Ninguna":
                 st.info("No tienes pruebas asignadas en este momento. El staff psicológico te notificará cuando debas realizar una evaluación.")
             else:
-                st.write(f"Tienes asignada la evaluación: **{prueba_asignada}**. Responde con honestidad.")
+                st.write(f"Tienes las siguientes evaluaciones asignadas. Responde con honestidad.")
                 
-                if prueba_asignada in ["POMS", "Todas"]:
+                if tiene_prueba("POMS"):
                     with st.expander("📝 Abrir Cuestionario POMS", expanded=True):
                         items_poms = [
                             "Enfadado", "Agotado", "Lleno de energía", "Amable", "Con los nervios de punta", 
@@ -268,11 +293,11 @@ else:
                                     "perfil_ia": perfil,
                                     "respuestas_detalladas": resp_crudas
                                 }).execute()
-                                supabase.table("usuarios").update({"pruebas_desbloqueadas": "Ninguna", "periodo_asignado": "No definido"}).eq("id", usuario_actual["id"]).execute()
-                            st.success("Enviado exitosamente.")
+                                marcar_prueba_completada("POMS")
+                            st.success("POMS Enviado exitosamente.")
                             st.rerun()
 
-                if prueba_asignada in ["ACSI-28", "Todas"]:
+                if tiene_prueba("ACSI-28"):
                     with st.expander("📝 Abrir Cuestionario ACSI-28", expanded=True):
                         items_acsi = [
                             "Diaria o semanalmente establezco metas muy especificas que guian lo que hago.",
@@ -323,11 +348,11 @@ else:
                                     "perfil_ia": perfil,
                                     "respuestas_detalladas": resp_crudas
                                 }).execute()
-                                supabase.table("usuarios").update({"pruebas_desbloqueadas": "Ninguna", "periodo_asignado": "No definido"}).eq("id", usuario_actual["id"]).execute()
-                            st.success("Enviado exitosamente.")
+                                marcar_prueba_completada("ACSI-28")
+                            st.success("ACSI-28 Enviado exitosamente.")
                             st.rerun()
 
-                if prueba_asignada in ["IPED", "Todas"]:
+                if tiene_prueba("IPED"):
                     with st.expander("📝 Abrir Cuestionario IPED", expanded=True):
                         items_iped = [
                             "Me veo mas como un ganador que como un perdedor durante las competiciones.",
@@ -370,11 +395,11 @@ else:
                                     "perfil_ia": perfil,
                                     "respuestas_detalladas": resp_crudas
                                 }).execute()
-                                supabase.table("usuarios").update({"pruebas_desbloqueadas": "Ninguna", "periodo_asignado": "No definido"}).eq("id", usuario_actual["id"]).execute()
-                            st.success("Enviado exitosamente.")
+                                marcar_prueba_completada("IPED")
+                            st.success("IPED Enviado exitosamente.")
                             st.rerun()
 
-                if prueba_asignada in ["GEQ", "Todas"]:
+                if tiene_prueba("GEQ"):
                     with st.expander("📝 Abrir Cuestionario GEQ", expanded=True):
                         items_geq = [
                             "No disfruto formar parte de las actividades sociales de este equipo.",
@@ -415,8 +440,8 @@ else:
                                     "perfil_ia": perfil,
                                     "respuestas_detalladas": resp_crudas
                                 }).execute()
-                                supabase.table("usuarios").update({"pruebas_desbloqueadas": "Ninguna", "periodo_asignado": "No definido"}).eq("id", usuario_actual["id"]).execute()
-                            st.success("Enviado exitosamente.")
+                                marcar_prueba_completada("GEQ")
+                            st.success("GEQ Enviado exitosamente.")
                             st.rerun()
 
         with t_historial:
