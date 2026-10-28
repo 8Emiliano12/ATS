@@ -90,7 +90,6 @@ else:
         st.session_state.usuario = None
         st.rerun()
 
-    # Función para ir restando las pruebas que el atleta ya envió
     def marcar_prueba_completada(prueba_hecha):
         asignadas_str = usuario_actual.get("pruebas_desbloqueadas", "Ninguna")
         if asignadas_str == "Todas":
@@ -183,7 +182,6 @@ else:
                 with st.expander(f"🏈 {jug['nombre']} | Asignada: {estado_actual} ({periodo_actual})"):
                     col1, col2, col3 = st.columns([2, 2, 1])
                     with col1:
-                        # Convertimos a multi-selector para elegir varias a la vez
                         prueba_sel = st.multiselect("Pruebas a enviar:", ["POMS", "ACSI-28", "IPED", "GEQ"], key=f"sel_p_{jug['id']}")
                     with col2:
                         periodo_sel = st.selectbox("Etapa actual:", ["General", "Específico", "Pre temporada", "Pre competitivo", "Descarga"], key=f"sel_t_{jug['id']}")
@@ -230,12 +228,19 @@ else:
                         else:
                             st.write("Aún no se ha generado un resumen consolidado para este atleta.")
                         
-                        if st.button("🧠 Generar Reporte del Atleta (IA)", key=f"resumen_{jug['id']}"):
-                            with st.spinner("Integrando historial y generando resumen clínico..."):
-                                nuevo_resumen = generar_resumen_expediente(jug['nombre'], historial_texto)
-                                supabase.table("usuarios").update({"resumen_expediente": nuevo_resumen}).eq("id", jug["id"]).execute()
-                            st.success("Resumen generado y guardado exitosamente.")
-                            st.rerun()
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            if st.button("🧠 Generar Reporte (IA)", key=f"resumen_{jug['id']}"):
+                                with st.spinner("Integrando historial y generando resumen clínico..."):
+                                    nuevo_resumen = generar_resumen_expediente(jug['nombre'], historial_texto)
+                                    supabase.table("usuarios").update({"resumen_expediente": nuevo_resumen}).eq("id", jug["id"]).execute()
+                                st.success("Resumen generado exitosamente.")
+                                st.rerun()
+                        with col2:
+                            if st.button("🗑️ Borrar Todo el Expediente", key=f"del_exp_{jug['id']}"):
+                                supabase.table("evaluaciones").delete().eq("jugador_id", jug["id"]).execute()
+                                supabase.table("usuarios").update({"resumen_expediente": ""}).eq("id", jug["id"]).execute()
+                                st.rerun()
 
     # ==========================================
     # VISTA ATLETA (JUGADOR)
