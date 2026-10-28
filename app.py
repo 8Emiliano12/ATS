@@ -8,7 +8,7 @@ supabase: Client = create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABAS
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 modelo_ia = genai.GenerativeModel('gemini-2.5-flash')
 
-st.set_page_config(page_title="SAP Pumas CU", page_icon="🏈", layout="wide")
+st.set_page_config(page_title="ATS Pumas CU", page_icon="🏈", layout="wide")
 
 if "usuario" not in st.session_state:
     st.session_state.usuario = None
@@ -61,7 +61,7 @@ INSTRUCCIÓN CRÍTICA: Escribe un Resumen de Expediente MUY CONCRETO y DIRECTO e
 
 # --- INTERFAZ PRINCIPAL ---
 if st.session_state.usuario is None:
-    st.title("SAP Pumas CU - Acceso")
+    st.title("ATS Pumas CU - Acceso")
     tab1, tab2 = st.tabs(["Iniciar Sesión", "Registrarse"])
     
     with tab1:
@@ -164,9 +164,9 @@ else:
                 with st.expander(f"🏈 {jug['nombre']} | Asignada: {estado_actual} ({periodo_actual})"):
                     col1, col2, col3 = st.columns([2, 2, 1])
                     with col1:
-                        prueba_sel = st.selectbox("Selecciona la prueba a enviar:", ["Ninguna", "POMS", "ACSI-28", "IPED", "GEQ", "Todas"], key=f"sel_p_{jug['id']}")
+                        prueba_sel = st.selectbox("Prueba a enviar:", ["Ninguna", "POMS", "ACSI-28", "IPED", "GEQ", "Todas"], key=f"sel_p_{jug['id']}")
                     with col2:
-                        periodo_sel = st.selectbox("Temporada actual:", ["Pretemporada", "Temporada Regular", "Postemporada"], key=f"sel_t_{jug['id']}")
+                        periodo_sel = st.selectbox("Etapa actual:", ["General", "Específico", "Pre temporada", "Pre competitivo", "Descarga"], key=f"sel_t_{jug['id']}")
                     with col3:
                         st.write("") 
                         st.write("")
