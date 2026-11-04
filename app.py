@@ -15,10 +15,8 @@ if "usuario" not in st.session_state:
     st.session_state.usuario = None
 
 def login(correo_input, password_input):
-    # Forzar minúsculas y quitar espacios accidentales al inicio o final
     correo_limpio = correo_input.strip().lower()
     password_limpio = password_input.strip()
-    
     try:
         res = supabase.table("usuarios").select("*").eq("correo", correo_limpio).eq("password", password_limpio).execute()
         if len(res.data) > 0:
@@ -31,7 +29,6 @@ def login(correo_input, password_input):
 
 def registrar(correo, password, nombre):
     try:
-        # Al registrar, también guardamos el correo en minúsculas por seguridad
         nuevo = {"correo": correo.strip().lower(), "password": password.strip(), "nombre": nombre.strip(), "rol": "jugador", "pruebas_desbloqueadas": "Ninguna", "periodo_asignado": "No definido"}
         supabase.table("usuarios").insert(nuevo).execute()
         st.success("Registro exitoso. Inicia sesión.")
@@ -117,9 +114,6 @@ else:
             "periodo_asignado": nuevo_periodo
         }).eq("id", usuario_actual["id"]).execute()
 
-    # ==========================================
-    # VISTA STAFF (PSICÓLOGO)
-    # ==========================================
     if usuario_actual["rol"] == "psicologo":
         st.title("Panel de Control - Staff Psicológico")
         t_buzon, t_agenda, t_roster, t_expediente = st.tabs(["📥 Buzón", "🗓️ Agenda", "👥 Roster", "📁 Expedientes"])
@@ -127,9 +121,7 @@ else:
         with t_buzon:
             st.subheader("Evaluaciones Pendientes de Revisión")
             evaluaciones = supabase.table("evaluaciones").select("*, usuarios(nombre)").order("id", desc=True).execute()
-            
             pendientes = [ev for ev in evaluaciones.data if ev.get("estado") != "Revisada"]
-            revisadas = [ev for ev in evaluaciones.data if ev.get("estado") == "Revisada"]
             
             if not pendientes:
                 st.info("No hay evaluaciones nuevas pendientes de revisión.")
@@ -148,7 +140,6 @@ else:
                     
                     st.markdown("---")
                     notas = st.text_area("Tus notas y observaciones para el atleta:", key=f"nota_{ev['id']}")
-                    
                     col1, col2 = st.columns(2)
                     with col1:
                         if st.button("💾 Guardar y Marcar Revisada", key=f"rev_{ev['id']}"):
@@ -165,14 +156,12 @@ else:
             citas = supabase.table("citas").select("*, usuarios(nombre)").order("id", desc=True).execute()
             if not citas.data:
                 st.info("No hay citas programadas por el momento.")
-            
             for cita in citas.data:
                 nombre = cita['usuarios']['nombre'] if cita['usuarios'] else "Desconocido"
                 estado_icono = "📅" if cita['estado'] == "Pendiente" else "✅"
                 with st.expander(f"{estado_icono} {nombre} - {cita['fecha']} a las {cita['hora']}"):
                     st.write(f"**Motivo:** {cita.get('motivo', 'No especificado')}")
                     st.write(f"**Estado Actual:** {cita.get('estado', 'Pendiente')}")
-                    
                     if cita['estado'] == "Pendiente":
                         if st.button("Confirmar Cita", key=f"conf_cita_{cita['id']}"):
                             supabase.table("citas").update({"estado": "Confirmada"}).eq("id", cita["id"]).execute()
@@ -187,7 +176,6 @@ else:
             for jug in jugadores.data:
                 estado_actual = jug.get('pruebas_desbloqueadas', 'Ninguna')
                 periodo_actual = jug.get('periodo_asignado', 'No definido')
-                
                 with st.expander(f"🏈 {jug['nombre']} | Asignada: {estado_actual} ({periodo_actual})"):
                     col1, col2, col3 = st.columns([2, 2, 1])
                     with col1:
@@ -209,11 +197,9 @@ else:
         with t_expediente:
             st.subheader("Expedientes Clínicos de Atletas")
             jugadores_exp = supabase.table("usuarios").select("*").eq("rol", "jugador").execute()
-            
             for jug in jugadores_exp.data:
                 with st.expander(f"📁 Expediente: {jug['nombre']}"):
                     evals_jugador = supabase.table("evaluaciones").select("*").eq("jugador_id", jug["id"]).order("id", desc=False).execute()
-                    
                     if not evals_jugador.data:
                         st.warning("Este atleta aún no tiene pruebas registradas.")
                     else:
@@ -224,14 +210,12 @@ else:
                             periodo = e.get("periodo", "No definido")
                             perfil_ia = e.get("perfil_ia", "Sin análisis")
                             notas_psic = e.get("notas_psicologo", "Sin notas")
-                            
                             st.write(f"- **{tipo}** ({periodo}) - Estado: {e.get('estado')}")
                             historial_texto += f"\n--- PRUEBA: {tipo} | PERIODO: {periodo} ---\nAnálisis IA original: {perfil_ia}\nNotas del Psicólogo: {notas_psic}\n"
                         
                         st.markdown("---")
                         st.markdown("**📊 Evolución Gráfica (Puntajes Totales):**")
                         df_evals = pd.DataFrame(evals_jugador.data)
-                        
                         for prueba_nombre in ["POMS", "ACSI-28", "IPED", "GEQ"]:
                             df_p = df_evals[df_evals["tipo_prueba"] == prueba_nombre]
                             if len(df_p) > 1:
@@ -244,7 +228,6 @@ else:
 
                         st.markdown("---")
                         st.markdown("**Resumen Consolidado del Expediente:**")
-                        
                         resumen_actual = jug.get("resumen_expediente")
                         if resumen_actual:
                             st.info(resumen_actual)
@@ -265,9 +248,6 @@ else:
                                 supabase.table("usuarios").update({"resumen_expediente": ""}).eq("id", jug["id"]).execute()
                                 st.rerun()
 
-    # ==========================================
-    # VISTA ATLETA (JUGADOR)
-    # ==========================================
     else:
         st.title("Portal del Atleta")
         t_prueba, t_historial, t_cita = st.tabs(["📋 Prueba Pendiente", "📁 Mi Historial", "📅 Agendar Cita"])
@@ -300,6 +280,7 @@ else:
                             
                         if st.button("Enviar POMS"):
                             valores = [int(r.split(" ")[0]) for r in respuestas_poms]
+                            # POMS está estructurado correctamente con los saltos
                             colera = sum([valores[0], valores[6], valores[12], valores[18], valores[24]])
                             fatiga = sum([valores[1], valores[7], valores[13], valores[19], valores[25]])
                             vigor = sum([valores[2], valores[8], valores[14], valores[20], valores[26]])
@@ -308,7 +289,10 @@ else:
                             depresion = sum([valores[5], valores[11], valores[17], valores[23], valores[29]])
                             
                             total_poms = sum(valores)
-                            detalles = f"[POMS] Cólera: {colera}, Fatiga: {fatiga}, Vigor: {vigor}, Amistad: {amistad}, Tensión: {tension}, Depresión: {depresion}"
+                            detalles = (
+                                f"[POMS. Recuerda que Vigor y Amistad son positivos, el resto negativos.]\n"
+                                f"Cólera: {colera}, Fatiga: {fatiga}, Vigor: {vigor}, Amistad: {amistad}, Tensión: {tension}, Depresión: {depresion}"
+                            )
                             resp_crudas = "\n".join([f"{item}: {resp}" for item, resp in zip(items_poms, respuestas_poms)])
                             
                             with st.spinner("Enviando y analizando..."):
@@ -363,7 +347,21 @@ else:
                         if st.button("Enviar ACSI-28"):
                             v = [int(r.split(" ")[0]) for r in respuestas_acsi]
                             total_acsi = sum(v)
-                            detalles = f"[ACSI-28] Adversidad: {sum(v[0:4])}, Presión: {sum(v[4:8])}, Metas: {sum(v[8:12])}, Concentración: {sum(v[12:16])}, Libre Preocupación: {sum(v[16:20])}, Confianza: {sum(v[20:24])}, Entrenabilidad: {sum(v[24:28])} (Total: {total_acsi})"
+                            
+                            # CORRECCIÓN MATEMÁTICA ACSI-28: Sumar por los índices correctos mezclados
+                            met = sum([v[0], v[7], v[12], v[19]])
+                            cnf = sum([v[1], v[8], v[13], v[25]])
+                            ent = sum([v[2], v[9], v[14], v[26]])
+                            con = sum([v[3], v[10], v[15], v[24]])
+                            adv = sum([v[4], v[16], v[20], v[23]])
+                            pre = sum([v[5], v[17], v[21], v[27]])
+                            lib = sum([v[6], v[11], v[18], v[22]])
+                            
+                            detalles = (
+                                f"[ACSI-28. Máximo 12 puntos por subescala. Puntajes altos son muy positivos (fortaleza mental).]\n"
+                                f"Adversidad: {adv}, Presión: {pre}, Metas: {met}, Concentración: {con}, "
+                                f"Libre Preocupación: {lib}, Confianza: {cnf}, Entrenabilidad: {ent} (Total: {total_acsi})"
+                            )
                             resp_crudas = "\n".join([f"P{i+1}: {resp}" for i, resp in enumerate(respuestas_acsi)])
                             
                             with st.spinner("Enviando y analizando..."):
@@ -409,8 +407,6 @@ else:
                             
                         if st.button("Enviar IPED"):
                             v = [int(r.split(" ")[0]) for r in respuestas_iped]
-                            
-                            # Corrección de la lógica de sumatorias cruzadas del IPED
                             ac_score = v[0] + v[7] + v[14]
                             can_score = v[1] + v[8] + v[15]
                             cat_score = v[2] + v[9] + v[16]
@@ -421,14 +417,12 @@ else:
                             
                             total_iped = sum(v)
                             
-                            # Instrucción clara para evitar la alucinación de la escala
                             detalles = (
                                 f"[IPED - Escala corta. Máximo 15 pts por dimensión (CAC máx 10). "
                                 f"Puntajes cercanos al máximo indican un excelente dominio mental, NO déficit.] \n"
                                 f"AC:{ac_score}, CAN:{can_score}, CAT:{cat_score}, CVI:{cvi_score}, "
                                 f"NM:{nm_score}, CAP:{cap_score}, CAC:{cac_score}"
                             )
-                            
                             resp_crudas = "\n".join([f"P{i+1}: {resp}" for i, resp in enumerate(respuestas_iped)])
                             
                             with st.spinner("Enviando y analizando..."):
@@ -470,10 +464,15 @@ else:
                         respuestas_geq = [st.slider(f"{i+1}. {item}", 1, 9, 5, key=f"geq_{i}") for i, item in enumerate(items_geq)]
                             
                         if st.button("Enviar GEQ"):
-                            tarea = round(sum(respuestas_geq[:9]) / 9, 2)
-                            social = round(sum(respuestas_geq[9:]) / 9, 2)
+                            # CORRECCIÓN MATEMÁTICA GEQ: Tarea son los impares (1, 3...), Social son los pares (0, 2...)
+                            social_scores = [respuestas_geq[i] for i in range(0, 18, 2)]
+                            tarea_scores = [respuestas_geq[i] for i in range(1, 18, 2)]
+                            
+                            tarea = round(sum(tarea_scores) / 9, 2)
+                            social = round(sum(social_scores) / 9, 2)
                             total_geq = sum(respuestas_geq)
-                            detalles = f"[GEQ] Promedio Tarea: {tarea}, Promedio Social: {social}"
+                            
+                            detalles = f"[GEQ. Escala del 1 al 9. Puntajes altos muestran gran cohesión de equipo.]\nPromedio Tarea: {tarea}, Promedio Social: {social}"
                             resp_crudas = "\n".join([f"P{i+1}: Valor {resp}" for i, resp in enumerate(respuestas_geq)])
                             
                             with st.spinner("Enviando y analizando..."):
@@ -492,8 +491,6 @@ else:
 
         with t_historial:
             st.subheader("Mi Expediente y Citas")
-            
-            st.markdown("### 🗓️ Estado de mis Citas")
             mis_citas = supabase.table("citas").select("*").eq("jugador_id", usuario_actual["id"]).order("id", desc=True).execute()
             
             if not mis_citas.data:
@@ -530,7 +527,6 @@ else:
                     estado_tag = "🟢 Revisada" if ev.get("estado") == "Revisada" else "⏳ En Revisión"
                     tipo = ev.get("tipo_prueba", "Evaluación Psicológica")
                     periodo = ev.get("periodo", "No definido")
-                    
                     with st.expander(f"{estado_tag} - {tipo} ({periodo})"):
                         st.write("**Notas del Staff Psicológico:**")
                         if ev.get("notas_psicologo"):
@@ -541,7 +537,6 @@ else:
         with t_cita:
             st.subheader("Solicitar Cita con el Servicio Psicológico")
             st.write("Selecciona la fecha, hora y el motivo por el cual deseas agendar una sesión.")
-            
             col_d, col_t = st.columns(2)
             with col_d:
                 fecha_cita = st.date_input("Fecha preferida", min_value=datetime.date.today())
