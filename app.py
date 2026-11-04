@@ -409,8 +409,26 @@ else:
                             
                         if st.button("Enviar IPED"):
                             v = [int(r.split(" ")[0]) for r in respuestas_iped]
+                            
+                            # Corrección de la lógica de sumatorias cruzadas del IPED
+                            ac_score = v[0] + v[7] + v[14]
+                            can_score = v[1] + v[8] + v[15]
+                            cat_score = v[2] + v[9] + v[16]
+                            cvi_score = v[3] + v[10] + v[17]
+                            nm_score = v[4] + v[11] + v[18]
+                            cap_score = v[5] + v[12] + v[19]
+                            cac_score = v[6] + v[13]
+                            
                             total_iped = sum(v)
-                            detalles = f"[IPED] AC:{sum(v[0:3])}, CAN:{sum(v[3:6])}, CAT:{sum(v[6:9])}, CVI:{sum(v[9:12])}, NM:{sum(v[12:15])}, CAP:{sum(v[15:18])}, CAC:{sum(v[18:20])}"
+                            
+                            # Instrucción clara para evitar la alucinación de la escala
+                            detalles = (
+                                f"[IPED - Escala corta. Máximo 15 pts por dimensión (CAC máx 10). "
+                                f"Puntajes cercanos al máximo indican un excelente dominio mental, NO déficit.] \n"
+                                f"AC:{ac_score}, CAN:{can_score}, CAT:{cat_score}, CVI:{cvi_score}, "
+                                f"NM:{nm_score}, CAP:{cap_score}, CAC:{cac_score}"
+                            )
+                            
                             resp_crudas = "\n".join([f"P{i+1}: {resp}" for i, resp in enumerate(respuestas_iped)])
                             
                             with st.spinner("Enviando y analizando..."):
