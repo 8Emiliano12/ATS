@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 from supabase import create_client, Client
 import google.generativeai as genai
 import datetime
@@ -13,17 +14,25 @@ st.set_page_config(page_title="ATS Pumas CU", page_icon="🏈", layout="wide")
 if "usuario" not in st.session_state:
     st.session_state.usuario = None
 
-def login(correo, password):
-    res = supabase.table("usuarios").select("*").eq("correo", correo).eq("password", password).execute()
-    if len(res.data) > 0:
-        st.session_state.usuario = res.data[0]
-        st.rerun()
-    else:
-        st.error("Credenciales incorrectas.")
+def login(correo_input, password_input):
+    # Forzar minúsculas y quitar espacios accidentales al inicio o final
+    correo_limpio = correo_input.strip().lower()
+    password_limpio = password_input.strip()
+    
+    try:
+        res = supabase.table("usuarios").select("*").eq("correo", correo_limpio).eq("password", password_limpio).execute()
+        if len(res.data) > 0:
+            st.session_state.usuario = res.data[0]
+            st.rerun()
+        else:
+            st.error("Credenciales incorrectas. Verifica mayúsculas y espacios.")
+    except Exception as e:
+        st.error(f"Error de conexión: {e}")
 
 def registrar(correo, password, nombre):
     try:
-        nuevo = {"correo": correo, "password": password, "nombre": nombre, "rol": "jugador", "pruebas_desbloqueadas": "Ninguna", "periodo_asignado": "No definido"}
+        # Al registrar, también guardamos el correo en minúsculas por seguridad
+        nuevo = {"correo": correo.strip().lower(), "password": password.strip(), "nombre": nombre.strip(), "rol": "jugador", "pruebas_desbloqueadas": "Ninguna", "periodo_asignado": "No definido"}
         supabase.table("usuarios").insert(nuevo).execute()
         st.success("Registro exitoso. Inicia sesión.")
     except Exception as e:
@@ -220,6 +229,20 @@ else:
                             historial_texto += f"\n--- PRUEBA: {tipo} | PERIODO: {periodo} ---\nAnálisis IA original: {perfil_ia}\nNotas del Psicólogo: {notas_psic}\n"
                         
                         st.markdown("---")
+                        st.markdown("**📊 Evolución Gráfica (Puntajes Totales):**")
+                        df_evals = pd.DataFrame(evals_jugador.data)
+                        
+                        for prueba_nombre in ["POMS", "ACSI-28", "IPED", "GEQ"]:
+                            df_p = df_evals[df_evals["tipo_prueba"] == prueba_nombre]
+                            if len(df_p) > 1:
+                                st.write(f"*{prueba_nombre}*")
+                                chart_data = df_p[["periodo", "puntaje_total"]].copy()
+                                chart_data = chart_data.rename(columns={"periodo": "Etapa", "puntaje_total": "Puntaje"})
+                                st.line_chart(chart_data.set_index("Etapa"))
+                            elif len(df_p) == 1:
+                                st.caption(f"Falta una evaluación más de {prueba_nombre} para mostrar la gráfica de tendencia.")
+
+                        st.markdown("---")
                         st.markdown("**Resumen Consolidado del Expediente:**")
                         
                         resumen_actual = jug.get("resumen_expediente")
@@ -260,7 +283,7 @@ else:
             if prueba_asignada == "Ninguna":
                 st.info("No tienes pruebas asignadas en este momento. El staff psicológico te notificará cuando debas realizar una evaluación.")
             else:
-                st.write(f"Tienes las siguientes evaluaciones asignadas. Responde con honestidad.")
+                st.write(f"Tienes las siguientes evaluaciones asignadas para la etapa: **{periodo_asignado}**")
                 
                 if tiene_prueba("POMS"):
                     with st.expander("📝 Abrir Cuestionario POMS", expanded=True):
@@ -284,6 +307,7 @@ else:
                             tension = sum([valores[4], valores[10], valores[16], valores[22], valores[28]])
                             depresion = sum([valores[5], valores[11], valores[17], valores[23], valores[29]])
                             
+                            total_poms = sum(valores)
                             detalles = f"[POMS] Cólera: {colera}, Fatiga: {fatiga}, Vigor: {vigor}, Amistad: {amistad}, Tensión: {tension}, Depresión: {depresion}"
                             resp_crudas = "\n".join([f"{item}: {resp}" for item, resp in zip(items_poms, respuestas_poms)])
                             
@@ -293,8 +317,7 @@ else:
                                     "jugador_id": usuario_actual["id"], 
                                     "tipo_prueba": "POMS", 
                                     "periodo": periodo_asignado,
-                                    "poms_total": sum(valores), 
-                                    "acsi_total": 0, 
+                                    "puntaje_total": total_poms,
                                     "perfil_ia": perfil,
                                     "respuestas_detalladas": resp_crudas
                                 }).execute()
@@ -339,7 +362,8 @@ else:
                             
                         if st.button("Enviar ACSI-28"):
                             v = [int(r.split(" ")[0]) for r in respuestas_acsi]
-                            detalles = f"[ACSI-28] Adversidad: {sum(v[0:4])}, Presión: {sum(v[4:8])}, Metas: {sum(v[8:12])}, Concentración: {sum(v[12:16])}, Libre Preocupación: {sum(v[16:20])}, Confianza: {sum(v[20:24])}, Entrenabilidad: {sum(v[24:28])} (Total: {sum(v)})"
+                            total_acsi = sum(v)
+                            detalles = f"[ACSI-28] Adversidad: {sum(v[0:4])}, Presión: {sum(v[4:8])}, Metas: {sum(v[8:12])}, Concentración: {sum(v[12:16])}, Libre Preocupación: {sum(v[16:20])}, Confianza: {sum(v[20:24])}, Entrenabilidad: {sum(v[24:28])} (Total: {total_acsi})"
                             resp_crudas = "\n".join([f"P{i+1}: {resp}" for i, resp in enumerate(respuestas_acsi)])
                             
                             with st.spinner("Enviando y analizando..."):
@@ -348,8 +372,7 @@ else:
                                     "jugador_id": usuario_actual["id"], 
                                     "tipo_prueba": "ACSI-28", 
                                     "periodo": periodo_asignado,
-                                    "poms_total": 0, 
-                                    "acsi_total": sum(v), 
+                                    "puntaje_total": total_acsi,
                                     "perfil_ia": perfil,
                                     "respuestas_detalladas": resp_crudas
                                 }).execute()
@@ -386,6 +409,7 @@ else:
                             
                         if st.button("Enviar IPED"):
                             v = [int(r.split(" ")[0]) for r in respuestas_iped]
+                            total_iped = sum(v)
                             detalles = f"[IPED] AC:{sum(v[0:3])}, CAN:{sum(v[3:6])}, CAT:{sum(v[6:9])}, CVI:{sum(v[9:12])}, NM:{sum(v[12:15])}, CAP:{sum(v[15:18])}, CAC:{sum(v[18:20])}"
                             resp_crudas = "\n".join([f"P{i+1}: {resp}" for i, resp in enumerate(respuestas_iped)])
                             
@@ -395,8 +419,7 @@ else:
                                     "jugador_id": usuario_actual["id"], 
                                     "tipo_prueba": "IPED", 
                                     "periodo": periodo_asignado,
-                                    "poms_total": 0, 
-                                    "acsi_total": 0, 
+                                    "puntaje_total": total_iped,
                                     "perfil_ia": perfil,
                                     "respuestas_detalladas": resp_crudas
                                 }).execute()
@@ -431,6 +454,7 @@ else:
                         if st.button("Enviar GEQ"):
                             tarea = round(sum(respuestas_geq[:9]) / 9, 2)
                             social = round(sum(respuestas_geq[9:]) / 9, 2)
+                            total_geq = sum(respuestas_geq)
                             detalles = f"[GEQ] Promedio Tarea: {tarea}, Promedio Social: {social}"
                             resp_crudas = "\n".join([f"P{i+1}: Valor {resp}" for i, resp in enumerate(respuestas_geq)])
                             
@@ -440,8 +464,7 @@ else:
                                     "jugador_id": usuario_actual["id"], 
                                     "tipo_prueba": "GEQ", 
                                     "periodo": periodo_asignado,
-                                    "poms_total": 0, 
-                                    "acsi_total": 0, 
+                                    "puntaje_total": total_geq,
                                     "perfil_ia": perfil,
                                     "respuestas_detalladas": resp_crudas
                                 }).execute()
@@ -474,6 +497,17 @@ else:
             if not mis_evals.data:
                 st.info("Aún no tienes evaluaciones registradas.")
             else:
+                df_mis_evals = pd.DataFrame(mis_evals.data).sort_values(by="id", ascending=True)
+                st.markdown("**📊 Mi Evolución Gráfica:**")
+                for prueba_nombre in ["POMS", "ACSI-28", "IPED", "GEQ"]:
+                    df_p = df_mis_evals[df_mis_evals["tipo_prueba"] == prueba_nombre]
+                    if len(df_p) > 1:
+                        st.write(f"*{prueba_nombre}*")
+                        chart_data = df_p[["periodo", "puntaje_total"]].copy()
+                        chart_data = chart_data.rename(columns={"periodo": "Etapa", "puntaje_total": "Puntaje"})
+                        st.line_chart(chart_data.set_index("Etapa"))
+                
+                st.markdown("---")
                 for ev in mis_evals.data:
                     estado_tag = "🟢 Revisada" if ev.get("estado") == "Revisada" else "⏳ En Revisión"
                     tipo = ev.get("tipo_prueba", "Evaluación Psicológica")
