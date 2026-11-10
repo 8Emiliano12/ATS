@@ -99,7 +99,7 @@ else:
     def marcar_prueba_completada(prueba_hecha):
         asignadas_str = usuario_actual.get("pruebas_desbloqueadas", "Ninguna")
         if asignadas_str == "Todas":
-            lista = ["POMS", "ACSI-28", "IPED", "GEQ"]
+            lista = ["POMS", "ACSI-28", "IPED", "GEQ", "CPRD"]
         else:
             lista = [p.strip() for p in asignadas_str.split(",") if p.strip() != "Ninguna"]
             
@@ -179,7 +179,7 @@ else:
                 with st.expander(f"🏈 {jug['nombre']} | Asignada: {estado_actual} ({periodo_actual})"):
                     col1, col2, col3 = st.columns([2, 2, 1])
                     with col1:
-                        prueba_sel = st.multiselect("Pruebas a enviar:", ["POMS", "ACSI-28", "IPED", "GEQ"], key=f"sel_p_{jug['id']}")
+                        prueba_sel = st.multiselect("Pruebas a enviar:", ["POMS", "ACSI-28", "IPED", "GEQ", "CPRD"], key=f"sel_p_{jug['id']}")
                     with col2:
                         periodo_sel = st.selectbox("Etapa actual:", ["General", "Específico", "Pre temporada", "Pre competitivo", "Descarga"], key=f"sel_t_{jug['id']}")
                     with col3:
@@ -216,7 +216,7 @@ else:
                         st.markdown("---")
                         st.markdown("**📊 Evolución Gráfica (Puntajes Totales):**")
                         df_evals = pd.DataFrame(evals_jugador.data)
-                        for prueba_nombre in ["POMS", "ACSI-28", "IPED", "GEQ"]:
+                        for prueba_nombre in ["POMS", "ACSI-28", "IPED", "GEQ", "CPRD"]:
                             df_p = df_evals[df_evals["tipo_prueba"] == prueba_nombre]
                             if len(df_p) > 1:
                                 st.write(f"*{prueba_nombre}*")
@@ -280,7 +280,6 @@ else:
                             
                         if st.button("Enviar POMS"):
                             valores = [int(r.split(" ")[0]) for r in respuestas_poms]
-                            # POMS está estructurado correctamente con los saltos
                             colera = sum([valores[0], valores[6], valores[12], valores[18], valores[24]])
                             fatiga = sum([valores[1], valores[7], valores[13], valores[19], valores[25]])
                             vigor = sum([valores[2], valores[8], valores[14], valores[20], valores[26]])
@@ -348,7 +347,6 @@ else:
                             v = [int(r.split(" ")[0]) for r in respuestas_acsi]
                             total_acsi = sum(v)
                             
-                            # CORRECCIÓN MATEMÁTICA ACSI-28: Sumar por los índices correctos mezclados
                             met = sum([v[0], v[7], v[12], v[19]])
                             cnf = sum([v[1], v[8], v[13], v[25]])
                             ent = sum([v[2], v[9], v[14], v[26]])
@@ -464,7 +462,6 @@ else:
                         respuestas_geq = [st.slider(f"{i+1}. {item}", 1, 9, 5, key=f"geq_{i}") for i, item in enumerate(items_geq)]
                             
                         if st.button("Enviar GEQ"):
-                            # CORRECCIÓN MATEMÁTICA GEQ: Tarea son los impares (1, 3...), Social son los pares (0, 2...)
                             social_scores = [respuestas_geq[i] for i in range(0, 18, 2)]
                             tarea_scores = [respuestas_geq[i] for i in range(1, 18, 2)]
                             
@@ -487,6 +484,119 @@ else:
                                 }).execute()
                                 marcar_prueba_completada("GEQ")
                             st.success("GEQ Enviado exitosamente.")
+                            st.rerun()
+
+                if tiene_prueba("CPRD"):
+                    with st.expander("📝 Abrir Cuestionario CPRD (55 ítems)", expanded=True):
+                        items_cprd = [
+                            "1. Suelo tener problemas concentrándome mientras compito.",
+                            "2. Mientras duermo, suelo darle muchas vueltas a la competición en la que voy a participar.",
+                            "3. Tengo una gran confianza en mi técnica.",
+                            "4. Algunas veces no me encuentro motivado(a) para entrenar.",
+                            "5. Me llevo muy bien con otros miembros del equipo.",
+                            "6. Rara vez me encuentro tan tenso(a) como para que mi tensión interfiera negativamente en mi rendimiento.",
+                            "7. A menudo ensayo mentalmente lo que debo hacer justo antes de comenzar mi participación en una competición.",
+                            "8. En la mayoría de competiciones confío en que lo haré bien.",
+                            "9. Cuando lo hago mal suelo perder la concentración.",
+                            "10. No se necesita mucho para que se debilite mi confianza en mí mismo(a).",
+                            "11. Me importa más mi propio rendimiento que el rendimiento del equipo.",
+                            "12. A menudo estoy muerto(a) de miedo en los momentos anteriores al comienzo de mi participación en una competencia.",
+                            "13. Cuando cometo un error me cuesta olvidarlo para volver a concentrarme rápidamente en lo que tengo que hacer.",
+                            "14. Cualquier pequeña lesión o un mal entrenamiento puede debilitar mi confianza en mi mismo(a).",
+                            "15. Establezco metas u objetivos que debo alcanzar y normalmente los consigo.",
+                            "16. Algunas veces siento una intensa ansiedad mientras estoy participando en una prueba.",
+                            "17. Durante mi actuación en una competición mi atención parece fluctuar una y otra vez entre lo que tengo que hacer y otras cosas.",
+                            "18. Me gusta trabajar con mis compañeros de equipo.",
+                            "19. Tengo frecuentes dudas respecto a mis posibilidades de hacerlo bien en una competición.",
+                            "20. Gasto mucha energía intentando estar tranquilo(a) antes de que comience una competición.",
+                            "21. Cuando comienzo haciéndolo mal, mi confianza baja rápidamente.",
+                            "22. Pienso que el espíritu de equipo es muy importante.",
+                            "23. Cuando practico mentalmente lo que tengo que hacer, me 'veo' haciéndolo como si estuviera viéndome desde una pantalla de televisión.",
+                            "24. Generalmente, puedo seguir participando con confianza, aunque se trate de una de mis peores actuaciones.",
+                            "25. Cuando me preparo para participar en una prueba, intento imaginarme, desde mi propia perspectiva, lo que veré, haré o notaré cuando la situación sea real.",
+                            "26. Mi confianza en mí mismo(a) es muy inestable.",
+                            "27. Cuando mi equipo pierde me encuentro mal con independencia de mi rendimiento individual.",
+                            "28. Cuando cometo un error en una competición me pongo muy ansioso.",
+                            "29. En este momento, lo más importante en mi vida es hacer bien mi deporte.",
+                            "30. Soy eficaz controlando mi tensión.",
+                            "31. Mi deporte es toda mi vida.",
+                            "32. Tengo fe en mi mismo(a).",
+                            "33. Suelo encontrarme motivado(a) para superarme día a día.",
+                            "34. A menudo pierdo la concentración durante la competición como consecuencia de las decisiones de los árbitros o jueces que considero desacertadas.",
+                            "35. Cuando cometo un error durante una competición suele preocuparme lo que piensen otras personas como el entrenador o los compañeros.",
+                            "36. El día anterior a una competición me encuentro habitualmente demasiado nervioso(a) o preocupado(a).",
+                            "37. Suelo marcarme objetivos cuya consecución depende de mi al 100% en lugar de objetivos que no dependen sólo de mí.",
+                            "38. Creo que la aportación específica de todos los miembros de un equipo es sumamente importante para la obtención del éxito del equipo.",
+                            "39. No merece la pena dedicar tanto tiempo y esfuerzo como yo le dedico al deporte.",
+                            "40. En las competiciones suelo animarme con palabras, pensamientos o imágenes.",
+                            "41. A menudo pierdo la concentración durante una competición por preocuparme o ponerme a pensar en el resultado final.",
+                            "42. Suelo aceptar bien las críticas e intento aprender de ellas.",
+                            "43. Me concentro con facilidad en aquello que es lo más importante en cada momento de una competición.",
+                            "44. Me cuesta aceptar que se destaque más la labor de otros miembros del equipo que la mía.",
+                            "45. Cuando finaliza una competición analizo mi rendimiento de forma objetiva y específica.",
+                            "46. A menudo pierdo la concentración en la competición a consecuencia de la actuación o los comentarios poco deportivos de los adversarios.",
+                            "47. Me preocupan mucho las decisiones que respecto a mí pueda tomar el entrenador durante una competición.",
+                            "48. No ensayo mentalmente, como parte de mi plan de entrenamiento, situaciones que debo corregir o mejorar.",
+                            "49. Durante los entrenamientos suelo estar muy concentrado(a) en lo que tengo que hacer.",
+                            "50. Suelo establecer objetivos prioritarios antes de cada sesión de entrenamiento y de cada competición.",
+                            "51. Mi confianza en la competición depende en gran medida de los éxitos o fracasos en las competiciones anteriores.",
+                            "52. Mi motivación depende en gran medida del reconocimiento que obtengo de los demás.",
+                            "53. Las instrucciones, comentarios y gestos del entrenador suelen interferir negativamente en mi concentración durante la competición.",
+                            "54. Suelo confiar en mí mismo(a) aun en los momentos más difíciles de una competición.",
+                            "55. Estoy dispuesto(a) a cualquier esfuerzo por ser cada vez mejor."
+                        ]
+                        
+                        opciones_cprd = ["1 - Totalmente en Desacuerdo", "2 - Moderadamente en Desacuerdo", "3 - Ni de acuerdo Ni en desacuerdo", "4 - Moderadamente de Acuerdo", "5 - Totalmente de Acuerdo"]
+                        respuestas_cprd = [st.selectbox(item, opciones_cprd, key=f"cprd_{i}") for i, item in enumerate(items_cprd)]
+                            
+                        if st.button("Enviar CPRD"):
+                            v = [int(r.split(" - ")[0]) for r in respuestas_cprd]
+                            
+                            def inv(val):
+                                return 6 - val
+                                
+                            ce_score = sum([
+                                inv(v[1]), inv(v[6]), inv(v[8]), v[12], inv(v[13]), inv(v[17]), inv(v[21]), 
+                                inv(v[26]), v[28], inv(v[33]), inv(v[37]), inv(v[40]), v[43], v[45], 
+                                inv(v[47]), v[49], inv(v[50]), v[51], inv(v[53]), inv(v[54])
+                            ])
+                            ier_score = sum([
+                                inv(v[3]), inv(v[9]), v[15], inv(v[18]), inv(v[20]), v[25], 
+                                inv(v[30]), inv(v[34]), inv(v[35]), inv(v[39]), inv(v[42]), v[46]
+                            ])
+                            mot_score = sum([
+                                v[2], inv(v[7]), v[10], inv(v[16]), inv(v[23]), v[27], inv(v[38]), v[48]
+                            ])
+                            hm_score = sum([
+                                v[0], v[5], v[14], v[22], inv(v[24]), v[29], v[31], inv(v[32]), v[41]
+                            ])
+                            ch_score = sum([
+                                v[4], v[11], v[19], v[36], v[44], v[52]
+                            ])
+                            
+                            total_cprd = ce_score + ier_score + mot_score + hm_score + ch_score
+                            
+                            detalles = (
+                                f"[CPRD. ESCALA DEL 1 AL 5 INVERTIDA MATEMÁTICAMENTE: "
+                                f"A MAYOR PUNTAJE, MEJOR CAPACIDAD Y SALUD MENTAL. PUNTOS BAJOS = RIESGO CLINICO.]\n"
+                                f"Control Estrés: {ce_score}/100, Influencia Evaluación: {ier_score}/60, Motivación: {mot_score}/40, "
+                                f"Habilidad Mental: {hm_score}/45, Cohesión: {ch_score}/30. (Total: {total_cprd}/275)"
+                            )
+                            
+                            resp_crudas = "\n".join([f"P{i+1}: {resp}" for i, resp in enumerate(respuestas_cprd)])
+                            
+                            with st.spinner("Enviando y analizando..."):
+                                perfil = generar_perfil_ia(usuario_actual['nombre'], detalles)
+                                supabase.table("evaluaciones").insert({
+                                    "jugador_id": usuario_actual["id"], 
+                                    "tipo_prueba": "CPRD", 
+                                    "periodo": periodo_asignado,
+                                    "puntaje_total": total_cprd,
+                                    "perfil_ia": perfil,
+                                    "respuestas_detalladas": resp_crudas
+                                }).execute()
+                                marcar_prueba_completada("CPRD")
+                            st.success("CPRD Enviado exitosamente.")
                             st.rerun()
 
         with t_historial:
@@ -514,7 +624,7 @@ else:
             else:
                 df_mis_evals = pd.DataFrame(mis_evals.data).sort_values(by="id", ascending=True)
                 st.markdown("**📊 Mi Evolución Gráfica:**")
-                for prueba_nombre in ["POMS", "ACSI-28", "IPED", "GEQ"]:
+                for prueba_nombre in ["POMS", "ACSI-28", "IPED", "GEQ", "CPRD"]:
                     df_p = df_mis_evals[df_mis_evals["tipo_prueba"] == prueba_nombre]
                     if len(df_p) > 1:
                         st.write(f"*{prueba_nombre}*")
