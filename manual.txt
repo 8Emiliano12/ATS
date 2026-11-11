@@ -306,4 +306,11 @@ Vigoroso
 Considerado (con los demás)
 Inquieto
 Melancólico
-
+--- CUESTIONARIO CPRD (Características Psicológicas relacionadas con el Rendimiento Deportivo) ---
+Escala general: La prueba consta de 5 dimensiones. Matemáticamente se han invertido los ítems negativos, por lo que A MAYOR PUNTAJE, MEJOR ES EL PERFIL PSICOLÓGICO DEL ATLETA. Puntuaciones bajas indican áreas de riesgo clínico.
+Dimensiones:
+1. Control del Estrés (Máximo 100 puntos): Puntuaciones altas indican un excelente manejo de la presión, ansiedad competitiva y situaciones adversas. Puntuaciones bajas indican vulnerabilidad al estrés.
+2. Influencia de la Evaluación del Rendimiento - IER (Máximo 60 puntos): Puntuaciones altas indican que el atleta tolera bien la crítica, la presión del público y no se quiebra tras cometer errores.
+3. Motivación (Máximo 40 puntos): Puntuaciones altas muestran un alto compromiso, empuje intrínseco y disposición al entrenamiento diario.
+4. Habilidad Mental (Máximo 45 puntos): Puntuaciones altas reflejan un buen uso de recursos cognitivos como la visualización, el auto-diálogo positivo y el establecimiento de metas.
+5. Cohesión de Equipo (Máximo 30 puntos): Puntuaciones altas indican una excelente integración, sentido de pertenencia y trabajo grupal.
