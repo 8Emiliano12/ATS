@@ -140,14 +140,35 @@ else:
                     
                     st.markdown("---")
                     notas = st.text_area("Tus notas y observaciones para el atleta:", key=f"nota_{ev['id']}")
-                    col1, col2 = st.columns(2)
+                    
+                    col1, col2, col3 = st.columns(3)
                     with col1:
-                        if st.button("💾 Guardar y Marcar Revisada", key=f"rev_{ev['id']}"):
+                        if st.button("💾 Marcar Revisada", key=f"rev_{ev['id']}"):
                             supabase.table("evaluaciones").update({"notas_psicologo": notas, "estado": "Revisada"}).eq("id", ev["id"]).execute()
                             st.success("Enviado al historial del atleta.")
                             st.rerun()
                     with col2:
                         if st.button("🗑️ Borrar Prueba", key=f"del_{ev['id']}"):
+                            supabase.table("evaluaciones").delete().eq("id", ev["id"]).execute()
+                            st.rerun()
+                    with col3:
+                        if st.button("🔁 Pedir Repetición", key=f"redo_{ev['id']}"):
+                            # Reasigna automáticamente la prueba y borra el intento actual
+                            jug = supabase.table("usuarios").select("pruebas_desbloqueadas").eq("id", ev["jugador_id"]).execute().data[0]
+                            asignadas = jug.get("pruebas_desbloqueadas", "Ninguna")
+                            
+                            if asignadas == "Ninguna":
+                                nuevo = tipo
+                            elif tipo not in asignadas and asignadas != "Todas":
+                                nuevo = asignadas + f", {tipo}"
+                            else:
+                                nuevo = asignadas
+                                
+                            supabase.table("usuarios").update({
+                                "pruebas_desbloqueadas": nuevo,
+                                "periodo_asignado": ev["periodo"]
+                            }).eq("id", ev["jugador_id"]).execute()
+                            
                             supabase.table("evaluaciones").delete().eq("id", ev["id"]).execute()
                             st.rerun()
 
@@ -643,6 +664,22 @@ else:
                             st.info(ev["notas_psicologo"])
                         else:
                             st.write("El psicólogo aún no ha dejado observaciones adicionales.")
+                        
+                        st.markdown("---")
+                        if st.button(f"🔁 Realizar de nuevo ({tipo})", key=f"ath_redo_{ev['id']}"):
+                            asignadas = usuario_actual.get("pruebas_desbloqueadas", "Ninguna")
+                            if asignadas == "Ninguna":
+                                nuevo = tipo
+                            elif tipo not in asignadas and asignadas != "Todas":
+                                nuevo = asignadas + f", {tipo}"
+                            else:
+                                nuevo = asignadas
+                            
+                            supabase.table("usuarios").update({
+                                "pruebas_desbloqueadas": nuevo,
+                                "periodo_asignado": periodo
+                            }).eq("id", usuario_actual["id"]).execute()
+                            st.rerun()
 
         with t_cita:
             st.subheader("Solicitar Cita con el Servicio Psicológico")
