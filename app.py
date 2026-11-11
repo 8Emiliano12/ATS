@@ -148,27 +148,14 @@ else:
                             st.success("Enviado al historial del atleta.")
                             st.rerun()
                     with col2:
-                        if st.button("🗑️ Borrar Prueba", key=f"del_{ev['id']}"):
-                            supabase.table("evaluaciones").delete().eq("id", ev["id"]).execute()
+                        if st.button("🤖 Regenerar IA", key=f"regen_{ev['id']}"):
+                            with st.spinner("Reescribiendo análisis clínico..."):
+                                det = f"Prueba: {tipo}\nPuntaje Total/Índices: {ev.get('puntaje_total', 'N/A')}\nRespuestas extraídas:\n{ev.get('respuestas_detalladas', '')}"
+                                n_perfil = generar_perfil_ia(nombre_jugador, det)
+                                supabase.table("evaluaciones").update({"perfil_ia": n_perfil}).eq("id", ev["id"]).execute()
                             st.rerun()
                     with col3:
-                        if st.button("🔁 Pedir Repetición", key=f"redo_{ev['id']}"):
-                            # Reasigna automáticamente la prueba y borra el intento actual
-                            jug = supabase.table("usuarios").select("pruebas_desbloqueadas").eq("id", ev["jugador_id"]).execute().data[0]
-                            asignadas = jug.get("pruebas_desbloqueadas", "Ninguna")
-                            
-                            if asignadas == "Ninguna":
-                                nuevo = tipo
-                            elif tipo not in asignadas and asignadas != "Todas":
-                                nuevo = asignadas + f", {tipo}"
-                            else:
-                                nuevo = asignadas
-                                
-                            supabase.table("usuarios").update({
-                                "pruebas_desbloqueadas": nuevo,
-                                "periodo_asignado": ev["periodo"]
-                            }).eq("id", ev["jugador_id"]).execute()
-                            
+                        if st.button("🗑️ Borrar Prueba", key=f"del_{ev['id']}"):
                             supabase.table("evaluaciones").delete().eq("id", ev["id"]).execute()
                             st.rerun()
 
@@ -231,7 +218,17 @@ else:
                             periodo = e.get("periodo", "No definido")
                             perfil_ia = e.get("perfil_ia", "Sin análisis")
                             notas_psic = e.get("notas_psicologo", "Sin notas")
-                            st.write(f"- **{tipo}** ({periodo}) - Estado: {e.get('estado')}")
+                            
+                            with st.expander(f"- **{tipo}** ({periodo}) - Estado: {e.get('estado')}"):
+                                st.write("**Análisis IA Original:**")
+                                st.write(perfil_ia)
+                                if st.button("🤖 Regenerar Perfil IA", key=f"regen_exp_{e['id']}"):
+                                    with st.spinner("La IA está reevaluando la prueba..."):
+                                        det = f"Prueba: {tipo}\nPuntaje Total/Índices: {e.get('puntaje_total', 'N/A')}\nRespuestas:\n{e.get('respuestas_detalladas', '')}"
+                                        n_perfil = generar_perfil_ia(jug['nombre'], det)
+                                        supabase.table("evaluaciones").update({"perfil_ia": n_perfil}).eq("id", e["id"]).execute()
+                                    st.rerun()
+                                    
                             historial_texto += f"\n--- PRUEBA: {tipo} | PERIODO: {periodo} ---\nAnálisis IA original: {perfil_ia}\nNotas del Psicólogo: {notas_psic}\n"
                         
                         st.markdown("---")
@@ -658,28 +655,18 @@ else:
                     estado_tag = "🟢 Revisada" if ev.get("estado") == "Revisada" else "⏳ En Revisión"
                     tipo = ev.get("tipo_prueba", "Evaluación Psicológica")
                     periodo = ev.get("periodo", "No definido")
+                    
                     with st.expander(f"{estado_tag} - {tipo} ({periodo})"):
+                        st.write(f"**Puntaje Total Calculado:** {ev.get('puntaje_total', 'N/A')}")
+                        
+                        with st.expander("📄 Ver mis respuestas enviadas"):
+                            st.text(ev.get("respuestas_detalladas", "Respuestas no disponibles."))
+                        
                         st.write("**Notas del Staff Psicológico:**")
                         if ev.get("notas_psicologo"):
                             st.info(ev["notas_psicologo"])
                         else:
                             st.write("El psicólogo aún no ha dejado observaciones adicionales.")
-                        
-                        st.markdown("---")
-                        if st.button(f"🔁 Realizar de nuevo ({tipo})", key=f"ath_redo_{ev['id']}"):
-                            asignadas = usuario_actual.get("pruebas_desbloqueadas", "Ninguna")
-                            if asignadas == "Ninguna":
-                                nuevo = tipo
-                            elif tipo not in asignadas and asignadas != "Todas":
-                                nuevo = asignadas + f", {tipo}"
-                            else:
-                                nuevo = asignadas
-                            
-                            supabase.table("usuarios").update({
-                                "pruebas_desbloqueadas": nuevo,
-                                "periodo_asignado": periodo
-                            }).eq("id", usuario_actual["id"]).execute()
-                            st.rerun()
 
         with t_cita:
             st.subheader("Solicitar Cita con el Servicio Psicológico")
