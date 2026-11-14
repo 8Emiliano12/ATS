@@ -55,11 +55,21 @@ INSTRUCCIÓN CRÍTICA: Escribe un perfil psicológico MUY CONCRETO, DIRECTO y BR
 
 def generar_resumen_expediente(nombre, historial_texto):
     try:
-        prompt = f"""Actúa como Psicólogo Deportivo de Pumas CU. Este es el historial consolidado de las pruebas psicométricas del atleta {nombre} a lo largo de diferentes periodos:
+        prompt = f"""Actúa como Psicólogo Deportivo Jefe de Pumas CU. Este es el historial clínico integral del atleta {nombre}, que incluye los resultados de múltiples pruebas psicométricas:
 
 {historial_texto}
 
-INSTRUCCIÓN CRÍTICA: Escribe un Resumen de Expediente MUY CONCRETO y DIRECTO en viñetas. Analiza la evolución del jugador cruzando la información de las distintas pruebas aplicadas y los periodos. Destaca fortalezas generales, áreas de riesgo persistentes y da una conclusión clínica breve. No uses introducciones laboriosas."""
+INSTRUCCIÓN CRÍTICA Y OBLIGATORIA: 
+Tu objetivo principal NO es resumir cada prueba por separado, sino ENCONTRAR CORRELACIONES CLÍNICAS ENTRE ELLAS basándote en los puntajes y análisis previos.
+- CORRELACIONA variables cruzadas: Por ejemplo, cruza los niveles de fatiga o tensión (POMS) con el control de estrés o habilidad mental (CPRD / IPED).
+- Cruza la cohesión de equipo (GEQ) con el factor social del CPRD.
+- Evalúa si la autoconfianza y motivación son congruentes entre el ACSI-28 y el IPED.
+
+Escribe el reporte MUY CONCRETO y DIRECTO en viñetas con esta estructura exacta:
+1. 🔗 Correlaciones Psicológicas Clave (Cómo interactúan sus resultados entre diferentes pruebas, menciona las congruencias o contradicciones).
+2. 📈 Evolución y Periodización (Si hay cambios notables entre la etapa general, pre-temporada, etc.).
+3. ⚠️ Áreas de Riesgo Integral (Focos rojos confirmados por la suma de varias pruebas).
+4. 🎯 Pronóstico y Recomendación Estratégica."""
         respuesta = modelo_ia.generate_content(prompt)
         return respuesta.text
     except Exception as e:
@@ -216,20 +226,22 @@ else:
                         for e in evals_jugador.data:
                             tipo = e.get("tipo_prueba", "Prueba")
                             periodo = e.get("periodo", "No definido")
+                            puntaje = e.get("puntaje_total", "N/A")
                             perfil_ia = e.get("perfil_ia", "Sin análisis")
                             notas_psic = e.get("notas_psicologo", "Sin notas")
                             
-                            with st.expander(f"- **{tipo}** ({periodo}) - Estado: {e.get('estado')}"):
+                            with st.expander(f"- **{tipo}** ({periodo}) - Puntaje: {puntaje} | Estado: {e.get('estado')}"):
                                 st.write("**Análisis IA Original:**")
                                 st.write(perfil_ia)
                                 if st.button("🤖 Regenerar Perfil IA", key=f"regen_exp_{e['id']}"):
                                     with st.spinner("La IA está reevaluando la prueba..."):
-                                        det = f"Prueba: {tipo}\nPuntaje Total/Índices: {e.get('puntaje_total', 'N/A')}\nRespuestas:\n{e.get('respuestas_detalladas', '')}"
+                                        det = f"Prueba: {tipo}\nPuntaje Total/Índices: {puntaje}\nRespuestas:\n{e.get('respuestas_detalladas', '')}"
                                         n_perfil = generar_perfil_ia(jug['nombre'], det)
                                         supabase.table("evaluaciones").update({"perfil_ia": n_perfil}).eq("id", e["id"]).execute()
                                     st.rerun()
                                     
-                            historial_texto += f"\n--- PRUEBA: {tipo} | PERIODO: {periodo} ---\nAnálisis IA original: {perfil_ia}\nNotas del Psicólogo: {notas_psic}\n"
+                            # Aquí inyectamos todo el contexto para que Gemini correlacione
+                            historial_texto += f"\n--- PRUEBA: {tipo} | PERIODO: {periodo} ---\nPUNTAJE TOTAL: {puntaje}\nAnálisis Individual: {perfil_ia}\nNotas Clínicas: {notas_psic}\n"
                         
                         st.markdown("---")
                         st.markdown("**📊 Evolución Gráfica (Puntajes Totales):**")
@@ -254,8 +266,8 @@ else:
                         
                         col1, col2 = st.columns(2)
                         with col1:
-                            if st.button("🧠 Generar Reporte (IA)", key=f"resumen_{jug['id']}"):
-                                with st.spinner("Integrando historial y generando resumen clínico..."):
+                            if st.button("🧠 Generar Reporte Cruzado (IA)", key=f"resumen_{jug['id']}"):
+                                with st.spinner("Integrando historial y correlacionando variables clínicas..."):
                                     nuevo_resumen = generar_resumen_expediente(jug['nombre'], historial_texto)
                                     supabase.table("usuarios").update({"resumen_expediente": nuevo_resumen}).eq("id", jug["id"]).execute()
                                 st.success("Resumen generado exitosamente.")
