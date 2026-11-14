@@ -49,7 +49,11 @@ RESULTADOS:
 
 INSTRUCCIÓN CRÍTICA: Escribe un perfil psicológico MUY CONCRETO, DIRECTO y BREVE para el psicólogo a cargo. NO uses introducciones largas ni texto laborioso. Ve directo al grano usando viñetas (bullet points) para destacar los hallazgos principales de los puntajes y finaliza con 2 recomendaciones prácticas y claras."""
         respuesta = modelo_ia.generate_content(prompt)
-        return respuesta.text
+        
+        # Inyección automática del disclaimer legal y clínico
+        disclaimer = "\n\n---\n⚠️ *Aviso: Este perfil ha sido generado por Inteligencia Artificial como herramienta de asistencia. Puede contener errores o imprecisiones. Su uso es estrictamente orientativo y debe ser validado e interpretado por un psicólogo especialista.*"
+        
+        return respuesta.text + disclaimer
     except Exception as e:
         return f"Error real de Gemini: {e}"
 
@@ -71,7 +75,11 @@ Escribe el reporte MUY CONCRETO y DIRECTO en viñetas con esta estructura exacta
 3. ⚠️ Áreas de Riesgo Integral (Focos rojos confirmados por la suma de varias pruebas).
 4. 🎯 Pronóstico y Recomendación Estratégica."""
         respuesta = modelo_ia.generate_content(prompt)
-        return respuesta.text
+        
+        # Inyección automática del disclaimer para reportes cruzados
+        disclaimer = "\n\n---\n⚠️ *Aviso: Este reporte cruzado ha sido generado por Inteligencia Artificial. Su análisis matemático y correlacional puede contener imprecisiones. El diagnóstico final y las decisiones de intervención deben ser establecidas exclusivamente por el staff psicológico a cargo.*"
+        
+        return respuesta.text + disclaimer
     except Exception as e:
         return f"Error de Gemini: {e}"
 
@@ -240,7 +248,6 @@ else:
                                         supabase.table("evaluaciones").update({"perfil_ia": n_perfil}).eq("id", e["id"]).execute()
                                     st.rerun()
                                     
-                            # Aquí inyectamos todo el contexto para que Gemini correlacione
                             historial_texto += f"\n--- PRUEBA: {tipo} | PERIODO: {periodo} ---\nPUNTAJE TOTAL: {puntaje}\nAnálisis Individual: {perfil_ia}\nNotas Clínicas: {notas_psic}\n"
                         
                         st.markdown("---")
